@@ -5,21 +5,22 @@ info:
   version: '1.0'
   
 paths: 
-  /to-dos:
+  /user/todos:
     get:
       summary: Return list of to-do
       responses:
         '200':
-          description: A Json array of to-dos
+          description: To-do array
           content: 
             application/json:
               schema:
-                type: array
                 items:
                   content: 
-                  $ref: '#/components/schemas/to-do'
-        '301':
-          description: Requested url moved
+                  $ref: '#/components/schemas/ToDoBundleResponse'
+        '404':
+          description: To-dos cannot found
+        '500':
+          description: Server error
     post:
       summary: Create a to-do
       requestBody:
@@ -28,7 +29,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/to-do2'
+              $ref: '#/components/schemas/ToDoResponse'
       responses:
         '200':
           description: Create a to-do
@@ -37,118 +38,116 @@ paths:
               schema:
                 type: string
                 content:
-                $ref: '#/components/schemas/to-do'
+                $ref: '#/components/schemas/ToDoResponse'
         '500':
           description: server error
-  /to-dos/{to-doID}:
+  /user/todos/{todoID}:
     get:
       summary: Returns a to-do by ID.
       parameters: 
-        - name: to-doID
+        - name: todoID
           in: path
           required: true
-          description: Parameter of to-do that you wanted the display
+          description: ID Parameter of to-do that you wanted the display
           schema:
-            $ref: '#/components/schemas/to-do'
+            $ref: '#/components/schemas/ToDoResponse'
       responses:
         '200':
-          description: Parameters Displayed
+          description: To-do displayed
           content:
             application/json:
               schema:
                 type: string
                 content:
-                $ref: '#/components/schemas/to-do'
+                $ref: '#/components/schemas/ToDoResponse'
+        '404':
+          description: To-do cannot found
         '500':
           description: server error
     delete:
       summary: Delete a to-do by ID
       parameters: 
-        - name: to-doID
+        - name: todoID
           in: path
           required: true
-          description: Parameter of to-do that you wanted the display
+          description: Parameter of to-do that you wanted the delete
           schema:
-            $ref: '#/components/schemas/to-do'
+            $ref: '#/components/schemas/ToDoResponse'
       responses:
         '200':
-          description: Json object deleted
+          description: To-do deleted
           content:
             application/json:
               schema:
                 type: string
                 content:
-                $ref: '#/components/schemas/to-do'
+                $ref: '#/components/schemas/ToDoResponse'
+        '404':
+          description: To-do cannot found
         '500':
           description: server error
-  /to-dos/{to-doDetail}:
+  /user/todos/{todoDetail}:
     patch:
       summary: Update to-do Detail
       parameters:
-        - name: to-doDetail
+        - name: todoDetail
           in: path
           required: true
           description: Parameter of to-do that you wanted the update
           schema:
-            $ref: '#/components/schemas/to-do/properties/details'
+            $ref: '#/components/schemas/ToDoResponse'
       responses:
         '200':
-          description: A Json object of to-do
+          description: To-do detail updated
           content:
             application/json:
               schema:
                 type: string
                 content:
-                $ref: '#/components/schemas/to-do/properties/details'
+                $ref: '#/components/schemas/ToDoResponse'
         '404':
           description: Requested to-do's detail not found
-  /to-dos/{to-doStatus}:
+  /user/todos/{todoStatus}:
     patch:
       summary: Update to-do Status
       parameters:
-        - name: to-doStatus
+        - name: todoStatus
           in: path
           required: true
           description: Parameter of to-do that you wanted the update
           schema:
-            $ref: '#/components/schemas/to-do/properties/status'
+            $ref: '#/components/schemas/ToDoResponse'
       responses:
         '200':
-          description: A Json object of to-do
+          description: To-do status updated
           content:
             application/json:
               schema:
                 type: string
                 content:
-                $ref: '#/components/schemas/to-do/properties/details'
+                $ref: '#/components/schemas/ToDoResponse'
+        '400':
+          description: Bad Request
         '500':
-          description: server error
-    
+          description: Server Error
+
 components: 
   schemas:
-    to-do:
-      title: to-do
+    ToDoResponse:
+      title: To-Do
       properties:
         id:
           type: integer
-          example: 13
         details:
           type: string
-          example: Do the swagger doc
         status:
           type: string
-          example: done
-    to-do2:
-      title: to-do
-      properties:
-        id:
-          type: integer
-          example: 0
-        details:
-          type: string
-          example: to-do app
-        status:
-          type: string
-          example: undone
+          enum:
+            - to-Do
+            - on progress
+            - done
+    ToDoBundleResponse:
+      allOf:
+        - $ref: '#/components/schemas/ToDoResponse'
       
   
