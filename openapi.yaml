@@ -29,18 +29,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToDoRequest'
+              $ref: '#/components/schemas/ToDoPatchRequest'
       responses:
         '200':
-          description: Create a to-do
-          content:
-            application/json:
-              schema:
-                type: object
-                content:
-                $ref: '#/components/schemas/ToDoRequest'
+          description: To-do created
         '500':
-          description: server error
+          description: Server error
   /user/todos/{todoID}:
     get:
       summary: Returns a to-do by ID.
@@ -63,39 +57,41 @@ paths:
         '404':
           description: To-do cannot found
         '500':
-          description: server error
+          description: Server error
     delete:
       summary: Delete a to-do by ID
       parameters: 
         - name: todoID
           in: path
           required: true
-          description: Parameter of to-do that you wanted the delete
+          description: ID parameter of to-do that you wanted the delete
           schema:
+            type: object
+            content:
             $ref: '#/components/schemas/ToDoResponse'
       responses:
         '200':
           description: To-do deleted
-          content:
-            application/json:
-              schema:
-                type: string
-                content:
-                $ref: '#/components/schemas/ToDoResponse'
         '404':
           description: To-do cannot found
         '500':
-          description: server error
-  /user/todos/{todoDetail}:
+          description: Server error
     patch:
-      summary: Update to-do Detail
+      summary: Update to-do by ID
       parameters:
-        - name: todoDetail
+        - name: todoID
           in: path
           required: true
           description: Parameter of to-do that you wanted the update
           schema:
-            $ref: '#/components/schemas/ToDoRequest/properties/details'
+            type: integer
+        - in: body
+          required: true
+          name: UpdateToDo
+          schema:
+            type: object
+            content:
+            $ref: '#/components/schemas/ToDoPatchRequest'
       responses:
         '200':
           description: To-do detail updated
@@ -104,37 +100,9 @@ paths:
               schema:
                 type: object
                 content:
-                $ref: '#/components/schemas/ToDoRequest'
+                $ref: '#/components/schemas/ToDoPatchRequest'
         '404':
           description: Requested to-do's detail not found
-  /user/todos/{todoStatus}:
-    patch:
-      summary: Update to-do Status
-      parameters:
-        - name: todoStatus
-          in: path
-          required: true
-          description: Parameter of to-do that you wanted the update
-          schema:
-            $ref: '#/components/schemas/ToDoRequest/properties/status'
-      responses:
-        '200':
-          description: To-do status updated
-          content:
-            application/json:
-              schema:
-                type: object
-                content:
-                $ref: '#/components/schemas/ToDoRequest'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-        '500':
-          description: Server Error
-
 components: 
   schemas:
     ToDoResponse:
@@ -150,8 +118,8 @@ components:
             - To-Do
             - On progress
             - Done
-    ToDoRequest:
-      title: To-do Request
+    ToDoPatchRequest:
+      title: To-do Patch Request
       properties:
         details:
           type: string
@@ -162,6 +130,7 @@ components:
             - On Progress
             - Done
     ToDoBundleResponse:
+      title: To-do Patch Bundle Request
       allOf:
         - $ref: '#/components/schemas/ToDoResponse'
     ErrorMessage:
