@@ -85,13 +85,13 @@ paths:
           description: Parameter of to-do that you wanted the update
           schema:
             type: integer
-        - in: body
-          required: true
-          name: UpdateToDo
-          schema:
-            type: object
-            content:
-            $ref: '#/components/schemas/ToDoPatchRequest'
+      requestBody:
+        description: Enter the values to patch a to-do
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToDoPatchRequest'
       responses:
         '200':
           description: To-do detail updated
