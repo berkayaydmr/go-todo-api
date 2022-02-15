@@ -29,16 +29,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToDoResponse'
+              $ref: '#/components/schemas/ToDoRequest'
       responses:
         '200':
           description: Create a to-do
           content:
             application/json:
               schema:
-                type: string
+                type: object
                 content:
-                $ref: '#/components/schemas/ToDoResponse'
+                $ref: '#/components/schemas/ToDoRequest'
         '500':
           description: server error
   /user/todos/{todoID}:
@@ -57,7 +57,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                type: object
                 content:
                 $ref: '#/components/schemas/ToDoResponse'
         '404':
@@ -95,16 +95,16 @@ paths:
           required: true
           description: Parameter of to-do that you wanted the update
           schema:
-            $ref: '#/components/schemas/ToDoResponse'
+            $ref: '#/components/schemas/ToDoRequest/properties/details'
       responses:
         '200':
           description: To-do detail updated
           content:
             application/json:
               schema:
-                type: string
+                type: object
                 content:
-                $ref: '#/components/schemas/ToDoResponse'
+                $ref: '#/components/schemas/ToDoRequest'
         '404':
           description: Requested to-do's detail not found
   /user/todos/{todoStatus}:
@@ -116,16 +116,16 @@ paths:
           required: true
           description: Parameter of to-do that you wanted the update
           schema:
-            $ref: '#/components/schemas/ToDoResponse'
+            $ref: '#/components/schemas/ToDoRequest/properties/status'
       responses:
         '200':
           description: To-do status updated
           content:
             application/json:
               schema:
-                type: string
+                type: object
                 content:
-                $ref: '#/components/schemas/ToDoResponse'
+                $ref: '#/components/schemas/ToDoRequest'
         '400':
           description: Bad Request
           content:
@@ -147,9 +147,20 @@ components:
         status:
           type: string
           enum:
-            - to-Do
-            - on progress
-            - done
+            - To-Do
+            - On progress
+            - Done
+    ToDoRequest:
+      title: To-do Request
+      properties:
+        details:
+          type: string
+        status:
+          type: string
+          enum:
+            - To-Do
+            - On Progress
+            - Done
     ToDoBundleResponse:
       allOf:
         - $ref: '#/components/schemas/ToDoResponse'
