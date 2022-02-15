@@ -19,10 +19,6 @@ paths:
                   $ref: '#/components/schemas/ToDoBundleResponse'
         '404':
           description: To-dos cannot found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400'
         '500':
           description: Server error
     post:
@@ -66,10 +62,6 @@ paths:
                 $ref: '#/components/schemas/ToDoResponse'
         '404':
           description: To-do cannot found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400'
         '500':
           description: server error
     delete:
@@ -92,10 +84,6 @@ paths:
                 $ref: '#/components/schemas/ToDoResponse'
         '404':
           description: To-do cannot found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400'
         '500':
           description: server error
   /user/todos/{todoDetail}:
@@ -119,10 +107,6 @@ paths:
                 $ref: '#/components/schemas/ToDoResponse'
         '404':
           description: Requested to-do's detail not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error400'
   /user/todos/{todoStatus}:
     patch:
       summary: Update to-do Status
@@ -147,7 +131,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error400'
+                $ref: '#/components/schemas/ErrorMessage'
         '500':
           description: Server Error
 
@@ -169,7 +153,7 @@ components:
     ToDoBundleResponse:
       allOf:
         - $ref: '#/components/schemas/ToDoResponse'
-    error400:
+    ErrorMessage:
       properties:
         message:
           default: 
