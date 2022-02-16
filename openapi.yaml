@@ -33,6 +33,8 @@ paths:
       responses:
         '201':
           description: To-do created
+        '400':
+          description: Values required bad request
         '500':
           description: Server error
   /user/todos/{todoID}:
@@ -54,6 +56,8 @@ paths:
                 type: object
                 content:
                 $ref: '#/components/schemas/ToDoResponse'
+        '400':
+          description: Wrong parameter given | bad request
         '404':
           description: To-do cannot found
         '500':
@@ -70,6 +74,8 @@ paths:
       responses:
         '204':
           description: No Content
+        '400':
+          description: Wrong parameter given | bad request
         '404':
           description: To-do cannot found
         '500':
@@ -99,8 +105,10 @@ paths:
                 type: object
                 content:
                 $ref: '#/components/schemas/ToDoResponse'
+        '400':
+          description: Wrong parameter given | bad request
         '404':
-          description: Requested to-do's detail not found
+          description: Requested to-do cannot found
 components: 
   schemas:
     ToDoResponse:
