@@ -44,7 +44,7 @@ paths:
           required: true
           description: ID Parameter of to-do that you wanted the display
           schema:
-            $ref: '#/components/schemas/ToDoResponse'
+            type: integer
       responses:
         '200':
           description: To-do displayed
@@ -66,9 +66,7 @@ paths:
           required: true
           description: ID parameter of to-do that you wanted the delete
           schema:
-            type: object
-            content:
-            $ref: '#/components/schemas/ToDoResponse'
+            type: integer
       responses:
         '200':
           description: To-do deleted
@@ -123,6 +121,8 @@ components:
       properties:
         details:
           type: string
+          required:
+            - "true"
         status:
           type: string
           enum:
