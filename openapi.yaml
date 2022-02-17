@@ -109,6 +109,8 @@ paths:
           description: Wrong parameter given | bad request
         '404':
           description: Requested to-do cannot found
+        '500':
+          description: Server Error
 components: 
   schemas:
     ToDoResponse:
