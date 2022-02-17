@@ -1,0 +1,150 @@
+openapi: 3.0.0
+info: 
+  title: To-do API
+  description: To-do app api
+  version: '1.0'
+  
+paths: 
+  /user/todos:
+    get:
+      summary: Return list of to-do
+      responses:
+        '200':
+          description: To-do array
+          content: 
+            application/json:
+              schema:
+                items:
+                  content: 
+                  $ref: '#/components/schemas/ToDoBundleResponse'
+        '404':
+          description: To-dos cannot found
+        '500':
+          description: Server error
+    post:
+      summary: Create a to-do
+      requestBody:
+        description: Enter the values to create a to-do
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToDoPatchRequest'
+      responses:
+        '201':
+          description: To-do created
+        '400':
+          description: Values required bad request
+        '500':
+          description: Server error
+  /user/todos/{todoID}:
+    get:
+      summary: Returns a to-do by ID.
+      parameters: 
+        - name: todoID
+          in: path
+          required: true
+          description: ID Parameter of to-do that you wanted the display
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: To-do displayed
+          content:
+            application/json:
+              schema:
+                type: object
+                content:
+                $ref: '#/components/schemas/ToDoResponse'
+        '400':
+          description: Wrong parameter given | bad request
+        '404':
+          description: To-do cannot found
+        '500':
+          description: Server error
+    delete:
+      summary: Delete a to-do by ID
+      parameters: 
+        - name: todoID
+          in: path
+          required: true
+          description: ID parameter of to-do that you wanted the delete
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Wrong parameter given | bad request
+        '404':
+          description: To-do cannot found
+        '500':
+          description: Server error
+    patch:
+      summary: Update to-do by ID
+      parameters:
+        - name: todoID
+          in: path
+          required: true
+          description: Parameter of to-do that you wanted the update
+          schema:
+            type: integer
+      requestBody:
+        description: Enter the values to patch a to-do
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToDoPatchRequest'
+      responses:
+        '200':
+          description: To-do detail updated
+          content:
+            application/json:
+              schema:
+                type: object
+                content:
+                $ref: '#/components/schemas/ToDoResponse'
+        '400':
+          description: Wrong parameter given | bad request
+        '404':
+          description: Requested to-do cannot found
+        '500':
+          description: Server Error
+components: 
+  schemas:
+    ToDoResponse:
+      title: To-Do
+      properties:
+        id:
+          type: integer
+        details:
+          type: string
+        status:
+          type: string
+          enum:
+            - To-Do
+            - On progress
+            - Done
+    ToDoPatchRequest:
+      title: To-do Patch Request
+      properties:
+        details:
+          type: string
+          required:
+            - "true"
+        status:
+          type: string
+          enum:
+            - To-Do
+            - On Progress
+            - Done
+    ToDoBundleResponse:
+      title: To-do Patch Bundle Request
+      allOf:
+        - $ref: '#/components/schemas/ToDoResponse'
+    ErrorMessage:
+      properties:
+        message:
+          default: 
+            Geçersiz bir istek gönderdiniz
