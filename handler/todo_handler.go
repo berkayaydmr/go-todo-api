@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"errors"
 	"go-todo-api/entities"
 	"go-todo-api/models"
 	"go-todo-api/repository"
@@ -9,6 +9,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type ToDoHandler struct {
@@ -20,81 +22,123 @@ func NewToDoHandler(ToDoRepo repository.ToDoRepositoryInterface) *ToDoHandler {
 }
 
 func (handler *ToDoHandler) PostToDo(c *gin.Context) {
-	var CreateToDo = &models.ToDoRequest{}
-
-	if err := c.BindJSON(&CreateToDo); err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
+	logger,err := zap.NewProduction()
+	if err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	var createToDo = &models.ToDoRequest{}
+	if err := c.BindJSON(&createToDo); err != nil {
+		logger.Error(err.Error())
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	var NewToDo = &entities.ToDo{}
-	NewToDo.Details = CreateToDo.Details
-	NewToDo.Status = CreateToDo.Status
-	handler.ToDoRepository.Insert(NewToDo)
-	c.JSON(http.StatusCreated, NewToDo)
+	var newToDo = &entities.ToDo{}
+	newToDo.Details = createToDo.Details
+	newToDo.Status = createToDo.Status
+	_, err = handler.ToDoRepository.Insert(newToDo)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	c.JSON(http.StatusCreated, newToDo)
 }
 
 func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
+	logger,err := zap.NewProduction()
+	if err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
 	var result entities.ToDo
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	result.Id = id
 	if err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
+		logger.Error(err.Error())
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-	_, err = handler.ToDoRepository.FindByID(&result, int(id))
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
+	_, err = handler.ToDoRepository.FindByID(&result)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		logger.Error(err.Error())
 		c.JSON(http.StatusNotFound, nil)
 		return
 	}
-	var PatchToDo *models.ToDoRequest
-	if err := c.ShouldBindJSON(&PatchToDo); err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
+	if err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError,nil)
 		return
 	}
 
-	result.Status = PatchToDo.Status
-	result.Details = PatchToDo.Details
-	handler.ToDoRepository.Update(&result)
+	var patchToDo *models.ToDoRequest
+	if err := c.ShouldBindJSON(&patchToDo); err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	result.Status = patchToDo.Status
+	result.Details = patchToDo.Details
+	_, err = handler.ToDoRepository.Update(&result)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
 	c.JSON(http.StatusOK, result)
 }
 
 func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
-	var result entities.ToDo
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	logger,err := zap.NewProduction()
 	if err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	var result entities.ToDo
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	result.Id = id
+	if err != nil {
+		logger.Error(err.Error())
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-	_, err = handler.ToDoRepository.FindByID(&result, int(id))
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
+	_, err = handler.ToDoRepository.FindByID(&result)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		logger.Error(err.Error())
 		c.JSON(http.StatusNotFound, nil)
 		return
 	}
-	handler.ToDoRepository.Delete(&result)
-	c.JSON(http.StatusNoContent, gin.H{"message": "To Do Deleted"})
-}
-
-func (handler *ToDoHandler) GetToDos(c *gin.Context) {
-	var result = []*entities.ToDo{nil}
-	ToDos, err := handler.ToDoRepository.FindAll(result)
 	if err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
-		c.JSON(http.StatusBadRequest, nil)
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError,nil)
 		return
 	}
 
+	err = handler.ToDoRepository.Delete(&result)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func (handler *ToDoHandler) GetToDos(c *gin.Context) {
+	logger,err := zap.NewProduction()
+	if err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	var result = []*entities.ToDo{nil} //nil test için
+	ToDos, err := handler.ToDoRepository.FindAll(result)
+	if err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	//test için
 	if len(ToDos) == 0 {
 		c.JSON(http.StatusNotFound, nil)
 		return
@@ -103,20 +147,31 @@ func (handler *ToDoHandler) GetToDos(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) GetToDo(c *gin.Context) {
+	logger,err := zap.NewProduction()
+	if err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
 	var result entities.ToDo
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	result.Id = id
 	if err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
+		logger.Error(err.Error())
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-	_, err = handler.ToDoRepository.FindByID(&result, int(id))
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-		fmt.Println("")
-		c.JSON(http.StatusBadRequest, nil)
+	_, err = handler.ToDoRepository.FindByID(&result)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		logger.Error(err.Error())
+		c.JSON(http.StatusNotFound, nil)
 		return
 	}
+	if err != nil {
+		logger.Error(err.Error())
+		c.JSON(http.StatusInternalServerError,nil)
+		return
+	}
+
 	c.JSON(200, result)
 }

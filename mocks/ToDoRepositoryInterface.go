@@ -50,13 +50,13 @@ func (_m *ToDoRepositoryInterface) FindAll(result []*entities.ToDo) ([]*entities
 	return r0, r1
 }
 
-// FindByID provides a mock function with given fields: result, id
-func (_m *ToDoRepositoryInterface) FindByID(result *entities.ToDo, id int) (*entities.ToDo, error) {
-	ret := _m.Called(result, id)
+// FindByID provides a mock function with given fields: result
+func (_m *ToDoRepositoryInterface) FindByID(result *entities.ToDo) (*entities.ToDo, error) {
+	ret := _m.Called(result)
 
 	var r0 *entities.ToDo
-	if rf, ok := ret.Get(0).(func(*entities.ToDo, int) *entities.ToDo); ok {
-		r0 = rf(result, id)
+	if rf, ok := ret.Get(0).(func(*entities.ToDo) *entities.ToDo); ok {
+		r0 = rf(result)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*entities.ToDo)
@@ -64,8 +64,8 @@ func (_m *ToDoRepositoryInterface) FindByID(result *entities.ToDo, id int) (*ent
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*entities.ToDo, int) error); ok {
-		r1 = rf(result, id)
+	if rf, ok := ret.Get(1).(func(*entities.ToDo) error); ok {
+		r1 = rf(result)
 	} else {
 		r1 = ret.Error(1)
 	}

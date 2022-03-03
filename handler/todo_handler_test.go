@@ -61,7 +61,7 @@ func TestPatchToDo_OK(t *testing.T) {
 		toDo := mocks.ToDoResponse()
 		toDoo := &entities.ToDo{}
 		toDoPatch := mocks.ToDoPatchResponse()
-		mockToDoRepository.On("FindByID", toDoo, 0).Return(toDo, nil)
+		mockToDoRepository.On("FindByID", toDoo).Return(toDo, nil)
 		mockToDoRepository.On("Update", toDoPatch).Return(toDoPatch, nil)
 
 		toDoRequest := models.ToDoRequest{Details: "Updated Detail", Status: "Done"}
@@ -90,7 +90,7 @@ func TestPatchToDo_Fail(t *testing.T) {
 		toDo := mocks.ToDoResponse()
 		toDoo := &entities.ToDo{}
 		toDoPatch := mocks.ToDoPatchResponse()
-		mockToDoRepository.On("FindByID", toDoo, 0).Return(toDo, nil)
+		mockToDoRepository.On("FindByID", toDoo).Return(toDo, nil)
 		mockToDoRepository.On("Update", toDoPatch).Return(toDoPatch, nil)
 
 		toDoRequest := models.ToDoRequest{Details: "Updated Detail", Status: "Done"}
@@ -110,7 +110,7 @@ func TestDeleteToDo_OK(t *testing.T) {
 	t.Run("Delete To-Do", func(t *testing.T) {
 		mockToDoRepository := mocks.ToDoRepositoryInterface{}
 		toDoo := &entities.ToDo{}
-		mockToDoRepository.On("FindByID", toDoo, 0).Return(toDoo, nil)
+		mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
 		mockToDoRepository.On("Delete", toDoo).Return(nil)
 
 		recorder := httptest.NewRecorder()
@@ -127,7 +127,7 @@ func TestDeleteToDo_Fail(t *testing.T) {
 	t.Run("Delete To-Do", func(t *testing.T) {
 		mockToDoRepository := mocks.ToDoRepositoryInterface{}
 		toDoo := &entities.ToDo{}
-		mockToDoRepository.On("FindByID", toDoo, 0).Return(toDoo, nil)
+		mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
 		mockToDoRepository.On("Delete", toDoo).Return(nil)
 
 		recorder := httptest.NewRecorder()
@@ -182,7 +182,7 @@ func TestGetToDo_OK(t *testing.T) {
 	t.Run("GET To-Do", func(t *testing.T) {
 		mockToDoRepository := mocks.ToDoRepositoryInterface{}
 		toDo := &entities.ToDo{}
-		mockToDoRepository.On("FindByID", toDo, 0).Return(toDo, nil)
+		mockToDoRepository.On("FindByID", toDo).Return(toDo, nil)
 
 		recorder := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(recorder)
@@ -205,7 +205,7 @@ func TestGetToDo_Fail(t *testing.T) {
 	t.Run("GET To-Do", func(t *testing.T) {
 		mockToDoRepository := mocks.ToDoRepositoryInterface{}
 		toDo := &entities.ToDo{}
-		mockToDoRepository.On("FindByID", toDo, 0).Return(toDo, nil)
+		mockToDoRepository.On("FindByID", toDo).Return(toDo, nil)
 
 		recorder := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(recorder)

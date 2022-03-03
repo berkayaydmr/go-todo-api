@@ -1,18 +1,19 @@
 package common
 
 import (
-	"log"
-
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func ConnectDB() *gorm.DB {
-	dsn := "host=localhost user=postgres password=berkay1707 dbname=todo port=5432"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+func ConnectDB(DatabaseUrl string) *gorm.DB {
+	db, err := gorm.Open(postgres.Open(DatabaseUrl), &gorm.Config{})
+
+	logger := zap.NewExample()
 
 	if err != nil {
-		log.Fatalln(err)
+		logger.Error(err.Error())
+		return nil
 	}
 
 	return db

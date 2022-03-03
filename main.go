@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-
-	db := common.ConnectDB()
+	env := common.GetEnviroment()
+	db := common.ConnectDB(env.DatabaseUrl)
 	ToDoRepository := repository.NewToDoRepository(db)
 	ToDoHandler := handler.NewToDoHandler(ToDoRepository)
 	router := gin.Default()
