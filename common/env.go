@@ -18,7 +18,9 @@ func GetEnviroment() *Enviroment {
 	}
 
 	databaseUrl := os.Getenv("DSN")
-	routerUrl := os.Getenv("ROUTER_URL")
+	appHost := os.Getenv("APPLICATION_HOST")
+	appPort := os.Getenv("APPLICATION_PORT")
+	routerUrl := appHost + appPort
 	
 	return &Enviroment{
 		DatabaseUrl: databaseUrl,
