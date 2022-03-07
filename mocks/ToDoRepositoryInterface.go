@@ -74,26 +74,17 @@ func (_m *ToDoRepositoryInterface) FindByID(result *entities.ToDo) (*entities.To
 }
 
 // Insert provides a mock function with given fields: i
-func (_m *ToDoRepositoryInterface) Insert(i *entities.ToDo) (*entities.ToDo, error) {
+func (_m *ToDoRepositoryInterface) Insert(i *entities.ToDo) error {
 	ret := _m.Called(i)
 
-	var r0 *entities.ToDo
-	if rf, ok := ret.Get(0).(func(*entities.ToDo) *entities.ToDo); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*entities.ToDo) error); ok {
 		r0 = rf(i)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entities.ToDo)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*entities.ToDo) error); ok {
-		r1 = rf(i)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Update provides a mock function with given fields: i

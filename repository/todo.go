@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"errors"
 	"go-todo-api/entities"
 
 	"gorm.io/gorm"
 )
 
 type ToDoRepositoryInterface interface {
-	Insert(i *entities.ToDo) (*entities.ToDo, error)
+	Insert(i *entities.ToDo) error
 	Update(i *entities.ToDo) (*entities.ToDo, error)
 	Delete(i *entities.ToDo) error
 	FindAll(result []*entities.ToDo) ([]*entities.ToDo, error)
@@ -22,12 +23,12 @@ func NewToDoRepository(db *gorm.DB) *ToDoRepository {
 	return &ToDoRepository{db}
 }
 
-func (repository *ToDoRepository) Insert(i *entities.ToDo) (*entities.ToDo, error) {
+func (repository *ToDoRepository) Insert(i *entities.ToDo) (error) {
 	err := repository.db.Create(&i).Error
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return i, nil
+	return nil
 }
 
 func (repository *ToDoRepository) Update(i *entities.ToDo) (*entities.ToDo, error) {
@@ -52,6 +53,9 @@ func (repository *ToDoRepository) FindAll(result []*entities.ToDo) ([]*entities.
 
 func (repository *ToDoRepository) FindByID(result *entities.ToDo) (*entities.ToDo, error) {
 	err := repository.db.First(&result, int(result.Id)).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil,nil
+	}
 	if err != nil {
 		return nil, err
 	}
