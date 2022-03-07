@@ -20,7 +20,6 @@ func NewToDoHandler(ToDoRepo repository.ToDoRepositoryInterface) *ToDoHandler {
 }
 
 func (handler *ToDoHandler) PostToDo(c *gin.Context) {
-
 	var createToDo = &models.ToDoRequest{}
 	if err := c.BindJSON(&createToDo); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
@@ -118,17 +117,11 @@ func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) GetToDos(c *gin.Context) {
-
-	var result = []*entities.ToDo{nil} //nil test için
+	var result []*entities.ToDo //nil test için
 	ToDos, err := handler.ToDoRepository.FindAll(result)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-	//test için
-	if len(ToDos) == 0 {
-		c.JSON(http.StatusNotFound, nil)
 		return
 	}
 	c.JSON(200, ToDos)

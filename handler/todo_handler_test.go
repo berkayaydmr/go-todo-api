@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go-todo-api/entities"
 	"go-todo-api/mocks"
@@ -132,7 +133,7 @@ func TestDeleteToDo_Fail(t *testing.T) {
 
 func TestGetToDos_OK(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
-	var toDos = []*entities.ToDo{nil}
+	var toDos []*entities.ToDo
 
 	mockToDoRepository.On("FindAll", toDos).Return(toDos, nil)
 
@@ -153,15 +154,16 @@ func TestGetToDos_OK(t *testing.T) {
 
 func TestGetToDos_Fail(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
-	var toDos = []*entities.ToDo{nil}
-	mockToDoRepository.On("FindAll", toDos).Return(nil, nil)
+	var toDos []*entities.ToDo
+	err := errors.New("err")
+	mockToDoRepository.On("FindAll", toDos).Return(nil, err)
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Request = httptest.NewRequest("GET", "/user/todos", nil)
 	handler := NewToDoHandler(&mockToDoRepository)
 	handler.GetToDos(c)
-	assert.Equal(t, http.StatusNotFound, recorder.Result().StatusCode)
+	assert.Equal(t, http.StatusInternalServerError, recorder.Result().StatusCode)
 }
 
 func TestGetToDo_OK(t *testing.T) {

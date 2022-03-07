@@ -20,6 +20,11 @@ func ToDoResponse() *entities.ToDo {
 	}
 }
 
+func ToDosResponse() []*entities.ToDo {
+	return []*entities.ToDo{}
+}
+
+
 func ToDoPatchResponse() *entities.ToDo {
 	Id := uint64(0)
 	Details := "Updated Detail"
