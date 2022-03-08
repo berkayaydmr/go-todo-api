@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 type Enviroment struct {
@@ -12,8 +13,9 @@ type Enviroment struct {
 }
 
 func GetEnviroment() *Enviroment {
-	err := godotenv.Load("database.env")
+	err := godotenv.Load(".env")
 	if err != nil {
+		zap.S().Error(err)
 		return nil
 	}
 
@@ -21,7 +23,7 @@ func GetEnviroment() *Enviroment {
 	appHost := os.Getenv("APPLICATION_HOST")
 	appPort := os.Getenv("APPLICATION_PORT")
 	routerUrl := appHost + appPort
-	
+
 	return &Enviroment{
 		DatabaseUrl: databaseUrl,
 		RouterUrl:   routerUrl,

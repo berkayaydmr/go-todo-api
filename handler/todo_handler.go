@@ -28,7 +28,7 @@ func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 	}
 
 	var newToDo = &entities.ToDo{
-		Details: createToDo.Details,
+		Details: *createToDo.Details,
 		Status:  createToDo.Status,
 	}
 	err := handler.ToDoRepository.Insert(newToDo)
@@ -41,7 +41,6 @@ func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
-
 	var result entities.ToDo
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	result.Id = id
@@ -51,14 +50,14 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 		return
 	}
 	record, err := handler.ToDoRepository.FindByID(&result)
-	if record == nil && err == nil {
-		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusNotFound, nil)
-		return
-	}
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	if record == nil {
+		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusNotFound, nil)
 		return
 	}
 
@@ -72,8 +71,8 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 	if patchToDo.Status != "" {
 		result.Status = patchToDo.Status
 	}
-	if patchToDo.Details != "" {
-		result.Details = patchToDo.Details
+	if patchToDo.Details != nil {
+		result.Details = *patchToDo.Details
 	}
 
 	_, err = handler.ToDoRepository.Update(&result)
@@ -86,7 +85,6 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
-
 	var result entities.ToDo
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	result.Id = id
@@ -96,14 +94,14 @@ func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
 		return
 	}
 	record, err := handler.ToDoRepository.FindByID(&result)
-	if record == nil && err == nil {
-		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusNotFound, nil)
-		return
-	}
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	if record == nil {
+		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusNotFound, nil)
 		return
 	}
 
@@ -117,7 +115,7 @@ func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) GetToDos(c *gin.Context) {
-	var result []*entities.ToDo //nil test için
+	var result []*entities.ToDo
 	ToDos, err := handler.ToDoRepository.FindAll(result)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
@@ -128,7 +126,6 @@ func (handler *ToDoHandler) GetToDos(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) GetToDo(c *gin.Context) {
-
 	var result entities.ToDo
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	result.Id = id
@@ -138,14 +135,14 @@ func (handler *ToDoHandler) GetToDo(c *gin.Context) {
 		return
 	}
 	record, err := handler.ToDoRepository.FindByID(&result)
-	if record == nil && err == nil {
-		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusNotFound, nil)
-		return
-	}
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	if record == nil {
+		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusNotFound, nil)
 		return
 	}
 

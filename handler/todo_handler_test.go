@@ -21,7 +21,8 @@ func TestPostToDo_OK(t *testing.T) {
 	toDo := mocks.ToDoResponse()
 	mockToDoRepo.On("Insert", toDo).Return(nil)
 
-	toDoRequest := models.ToDoRequest{Details: "testDetails", Status: "On Progress"}
+	var details string = "testDetails"
+	toDoRequest := models.ToDoRequest{Details: &details, Status: "On Progress"}
 
 	bin, _ := json.Marshal(toDoRequest)
 	recorder := httptest.NewRecorder()
@@ -62,7 +63,8 @@ func TestPatchToDo_OK(t *testing.T) {
 	mockToDoRepository.On("FindByID", toDoo).Return(toDo, nil)
 	mockToDoRepository.On("Update", toDoPatch).Return(toDoPatch, nil)
 
-	toDoRequest := models.ToDoRequest{Details: "Updated Detail", Status: "Done"}
+	var details string = "Updated Detail"
+	toDoRequest := models.ToDoRequest{Details: &details, Status: "Done"}
 
 	bin, _ := json.Marshal(toDoRequest)
 	handler := NewToDoHandler(&mockToDoRepository)
@@ -88,8 +90,9 @@ func TestPatchToDo_Fail(t *testing.T) {
 	toDoPatch := models.ToDoRequest{}
 	mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
 	mockToDoRepository.On("Update", toDoPatch).Return(toDoPatch, nil)
-
-	toDoRequest := models.ToDoRequest{Details: "Updated Detail", Status: "Done"}
+	
+	var details string = "Updated Detail"
+	toDoRequest := models.ToDoRequest{Details: &details, Status: "Done"}
 
 	bin, _ := json.Marshal(toDoRequest)
 	handler := NewToDoHandler(&mockToDoRepository)

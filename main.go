@@ -6,7 +6,6 @@ import (
 	"go-todo-api/repository"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
 
@@ -16,12 +15,6 @@ func main() {
 		logger.Error("Logger initialize error: ", zap.Error(err))
 	}
 	zap.ReplaceGlobals(logger)
-
-	err = godotenv.Load("database.env")
-	if err != nil {
-		zap.S().Error("Error: ", err)
-		return
-	}
 	
 	env := common.GetEnviroment()
 	db := common.ConnectDB(env.DatabaseUrl)

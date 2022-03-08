@@ -1,1 +1,1 @@
-DROP TABLE IF EXIST to_dos;
+DROP TABLE IF EXISTS to_dos;
