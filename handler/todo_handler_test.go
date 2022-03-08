@@ -21,8 +21,7 @@ func TestPostToDo_OK(t *testing.T) {
 	toDo := mocks.ToDoResponse()
 	mockToDoRepo.On("Insert", toDo).Return(nil)
 
-	var details string = "testDetails"
-	toDoRequest := models.ToDoRequest{Details: &details, Status: "On Progress"}
+	toDoRequest := models.ToDoRequest{Details: "testDetails", Status: "On Progress"}
 
 	bin, _ := json.Marshal(toDoRequest)
 	recorder := httptest.NewRecorder()

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"go-todo-api/entities"
 	"go-todo-api/models"
 	"go-todo-api/repository"
@@ -27,14 +28,15 @@ func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-	if createToDo.Details == nil {
+	fmt.Println(createToDo.Details)
+	if createToDo.Validate() {
 		zap.S().Error("Error: required field details send nil", createToDo.Details)
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
 	var newToDo = &entities.ToDo{
-		Details: *createToDo.Details,
+		Details: createToDo.Details,
 		Status:  createToDo.Status,
 	}
 	err := handler.ToDoRepository.Insert(newToDo)
