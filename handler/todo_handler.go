@@ -21,8 +21,14 @@ func NewToDoHandler(ToDoRepo repository.ToDoRepositoryInterface) *ToDoHandler {
 
 func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 	var createToDo = &models.ToDoRequest{}
+	
 	if err := c.BindJSON(&createToDo); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+	if createToDo.Details == nil {
+		zap.S().Error("Error: required field details send nil", createToDo.Details)
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
@@ -61,15 +67,15 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 		return
 	}
 
-	var patchToDo *models.ToDoRequest
+	var patchToDo *models.ToDoPatchRequest
 	if err := c.ShouldBindJSON(&patchToDo); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	if patchToDo.Status != "" {
-		result.Status = patchToDo.Status
+	if patchToDo.Status != nil {
+		result.Status = *patchToDo.Status
 	}
 	if patchToDo.Details != nil {
 		result.Details = *patchToDo.Details

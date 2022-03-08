@@ -64,7 +64,8 @@ func TestPatchToDo_OK(t *testing.T) {
 	mockToDoRepository.On("Update", toDoPatch).Return(toDoPatch, nil)
 
 	var details string = "Updated Detail"
-	toDoRequest := models.ToDoRequest{Details: &details, Status: "Done"}
+	var status string = "Done"
+	toDoRequest := models.ToDoPatchRequest{Details: &details, Status: &status}
 
 	bin, _ := json.Marshal(toDoRequest)
 	handler := NewToDoHandler(&mockToDoRepository)
@@ -90,9 +91,10 @@ func TestPatchToDo_Fail(t *testing.T) {
 	toDoPatch := models.ToDoRequest{}
 	mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
 	mockToDoRepository.On("Update", toDoPatch).Return(toDoPatch, nil)
-	
+
 	var details string = "Updated Detail"
-	toDoRequest := models.ToDoRequest{Details: &details, Status: "Done"}
+	var status string = "Done"
+	toDoRequest := models.ToDoPatchRequest{Details: &details, Status: &status}
 
 	bin, _ := json.Marshal(toDoRequest)
 	handler := NewToDoHandler(&mockToDoRepository)
