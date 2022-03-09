@@ -29,7 +29,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToDoPatchRequest'
+              $ref: '#/components/schemas/ToDoRequest'
       responses:
         '201':
           description: To-do created
@@ -95,7 +95,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToDoPatchRequest'
+              $ref: '#/components/schemas/ToDoRequest'
       responses:
         '200':
           description: To-do detail updated
@@ -126,7 +126,7 @@ components:
             - To-Do
             - On progress
             - Done
-    ToDoPatchRequest:
+    ToDoRequest:
       title: To-do Patch Request
       properties:
         details:
