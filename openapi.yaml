@@ -5,9 +5,119 @@ info:
   version: '1.0'
   
 paths: 
-  /user/todos:
+  /user:
+    get:
+      summary: Return list of users
+      responses: 
+        '200':
+          description: User Array
+          content:
+            application/json:
+              schema:
+                items: 
+                  content:
+                  $ref: '#/components/schemas/User'
+        '404':
+          description: Users cannot found
+        '500':
+          description: Server Error
+    post:
+      summary: Create a User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad Request
+        '500':
+          description: Server Error
+  /user/{userID}:
+    get: 
+      summary: Return a User by ID
+      description: Return a User
+      parameters:
+        - name: userID
+          in: path
+          required: true
+          description: User id that you want to get
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User cannot found
+        '500':
+          description: Server Error
+    patch:
+      summary: Update a User by ID
+      description: Update a user values
+      parameters:
+        - name: userID
+          in: path
+          required: true
+          description: User id that you want to update 
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPatchRequest'
+      responses:
+        '200': 
+          description: User Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Wrong parameters given
+        '404':
+          description: User cannot found
+        '500':
+          description: Server Error
+    delete:
+      summary: Delete a User by ID
+      description: Delete a user
+      parameters:
+        - name: userID
+          in: path
+          required: true
+          description: User id that you want to delete
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: To Do cannot found
+        '500':
+          description: Server error
+  /user/{userID}/todos:
     get:
       summary: Return list of to-do
+      parameters: 
+        - name: userID
+          in: path
+          required: true
+          description: User id that you want to get todos
+          schema:
+            type: integer
       responses:
         '200':
           description: To-do array
@@ -23,6 +133,13 @@ paths:
           description: Server error
     post:
       summary: Create a to-do
+      parameters:
+       - name: userID
+         in: path
+         required: true
+         description: User id that you want to post todo
+         schema:
+          type: integer
       requestBody:
         description: Enter the values to create a to-do
         required: true
@@ -37,7 +154,7 @@ paths:
           description: Values required bad request
         '500':
           description: Server error
-  /user/todos/{todoID}:
+  /user/{userID}/todos/{todoID}:
     get:
       summary: Returns a to-do by ID.
       parameters: 
@@ -45,6 +162,12 @@ paths:
           in: path
           required: true
           description: ID Parameter of to-do that you wanted the display
+          schema:
+            type: integer
+        - name: userID
+          in: path
+          required: true
+          description: User id that you want to get todo
           schema:
             type: integer
       responses:
@@ -62,24 +185,6 @@ paths:
           description: To-do cannot found
         '500':
           description: Server error
-    delete:
-      summary: Delete a to-do by ID
-      parameters: 
-        - name: todoID
-          in: path
-          required: true
-          description: ID parameter of to-do that you wanted the delete
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: No Content
-        '400':
-          description: Wrong parameter given | bad request
-        '404':
-          description: To-do cannot found
-        '500':
-          description: Server error
     patch:
       summary: Update to-do by ID
       parameters:
@@ -87,6 +192,12 @@ paths:
           in: path
           required: true
           description: Parameter of to-do that you wanted the update
+          schema:
+            type: integer
+        - name: userID
+          in: path
+          required: true
+          description: User id that you want to patch todo
           schema:
             type: integer
       requestBody:
@@ -111,8 +222,96 @@ paths:
           description: Requested to-do cannot found
         '500':
           description: Server Error
+    delete:
+      summary: Delete a to-do by ID
+      parameters: 
+        - name: todoID
+          in: path
+          required: true
+          description: ID parameter of to-do that you wanted the delete
+          schema:
+            type: integer
+        - name: userID
+          in: path
+          required: true
+          description: User id that you want to delete todo
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Wrong parameter given | bad request
+        '404':
+          description: To-do cannot found
+        '500':
+          description: Server error
 components: 
   schemas:
+    User: 
+      title: User
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        password:
+          type: string
+        status:
+          type: string
+          enum:
+          - Active
+          - Pending
+          - Passive
+    UserResponse: 
+      title: User Response
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        password:
+          type: string
+        status:
+          type: string
+          enum:
+          - Active
+          - Pending
+          - Passive
+    UserRequest: 
+      title: User Request
+      properties:
+        email:
+          type: string
+          required:
+          - "true"
+        password:
+          type: string
+          required:
+          - "true"
+        status:
+          type: string
+          enum:
+          - Active
+          - Pending
+          - Passive
+    UserPatchRequest: 
+      title: User Patch Request
+      properties:
+        password:
+          type: string
+          required:
+          - "true"
+        status:
+          type: string
+          enum:
+          - Active
+          - Pending
+          - Passive
+    UserBundleResponse:
+      title: User Bundle Request
+      allOf:
+        - $ref: '#/components/schemas/User'
     ToDoResponse:
       title: To-Do
       properties:
