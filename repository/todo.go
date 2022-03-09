@@ -53,10 +53,10 @@ func (repository *ToDoRepository) FindAll(result []*entities.ToDo) ([]*entities.
 
 func (repository *ToDoRepository) FindByID(result *entities.ToDo) (*entities.ToDo, error) {
 	err := repository.db.First(&result, int(result.Id)).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil,nil
-	}
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil,nil
+		}
 		return nil, err
 	}
 	return result, nil
