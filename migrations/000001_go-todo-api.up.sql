@@ -4,7 +4,8 @@ CREATE TABLE users (
     "password" varchar NOT NULL,
     "status" varchar NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT (now()),
-    "updated_at" timestamp NOT NULL DEFAULT (now())
+    "updated_at" timestamp NOT NULL DEFAULT (now()),
+    "deleted_at" timestamp
 );
 
 CREATE TABLE to_dos (
