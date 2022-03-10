@@ -9,7 +9,8 @@ import (
 
 type UserRepositoryInterface interface {
 	Insert(user *entities.User) (error)
-	Update(user *entities.User) (*entities.User, error)
+	Update(user *entities.User) (error)
+	Delete(user *entities.User) (error)
 	FindAll(user []*entities.User) ([]*entities.User, error)
 	FindByID(user *entities.User) (*entities.User, error)
 }
@@ -30,12 +31,20 @@ func (repository *UserRepository) Insert(user *entities.User) (error) {
 	return nil
 }
 
-func (repository *UserRepository) Update(user *entities.User) (*entities.User, error) {
+func (repository *UserRepository) Update(user *entities.User) (error) {
 	err := repository.db.Model(&user).Where("user_id = ?", user.Id).Save(&user).Error
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return user, nil
+	return nil
+}
+
+func (repository *UserRepository) Delete(user *entities.User) error {
+	err := repository.db.Where("user_id = ?", user.Id).Delete(user).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (repository *UserRepository) FindAll(user []*entities.User) ([]*entities.User, error) {

@@ -9,9 +9,9 @@ import (
 
 type ToDoRepositoryInterface interface {
 	Insert(i *entities.ToDo) error
-	Update(i *entities.ToDo) (*entities.ToDo, error)
+	Update(i *entities.ToDo) error
 	Delete(i *entities.ToDo) error
-	FindAll(result []*entities.ToDo) ([]*entities.ToDo, error)
+	FindAll(userID *entities.ToDo) ([]*entities.ToDo, error)
 	FindByID(result *entities.ToDo) (*entities.ToDo, error)
 }
 
@@ -31,28 +31,29 @@ func (repository *ToDoRepository) Insert(i *entities.ToDo) (error) {
 	return nil
 }
 
-func (repository *ToDoRepository) Update(i *entities.ToDo) (*entities.ToDo, error) {
-	err := repository.db.Model(&i).Where("id = ?", i.Id).Save(&i).Error
+func (repository *ToDoRepository) Update(i *entities.ToDo) error {
+	err := repository.db.Model(&i).Where("todo_id = ?", i.Id).Save(&i).Error
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return i, nil
+	return nil
 }
 
 func (repository *ToDoRepository) Delete(i *entities.ToDo) error {
 	return repository.db.Delete(&i).Error
 }
 
-func (repository *ToDoRepository) FindAll(result []*entities.ToDo) ([]*entities.ToDo, error) {
-	err := repository.db.Find(&result).Error
+func (repository *ToDoRepository) FindAll(userID *entities.ToDo) ([]*entities.ToDo, error) {
+	var toDos []*entities.ToDo
+	err := repository.db.Where("user_id = ?", userID.UserId).Find(&toDos).Error
 	if err != nil {
 		return nil, err
 	}
-	return result, err
+	return toDos, err
 }
 
 func (repository *ToDoRepository) FindByID(result *entities.ToDo) (*entities.ToDo, error) {
-	err := repository.db.First(&result, int(result.Id)).Error
+	err := repository.db.Where("user_id = ?", result.UserId).First(&result, int(result.Id)).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil,nil

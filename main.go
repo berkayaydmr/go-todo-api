@@ -15,21 +15,29 @@ func main() {
 		logger.Error("Logger initialize error: ", zap.Error(err))
 	}
 	zap.ReplaceGlobals(logger)
-	
+
 	env := common.GetEnviroment()
 	db := common.ConnectDB(env.DatabaseUrl)
 
 	ToDoRepository := repository.NewToDoRepository(db)
+	UserRepository := repository.NewUserRepository(db)
 	ToDoHandler := handler.NewToDoHandler(ToDoRepository)
+	UserHandler := handler.NewUserHandler(UserRepository)
 
 	router := gin.Default()
 	router.Use(gin.Recovery())
 
-	router.GET("user/todos", ToDoHandler.GetToDos)
-	router.GET("user/todos/:id", ToDoHandler.GetToDo)
-	router.POST("user/todos", ToDoHandler.PostToDo)
-	router.PATCH("user/todos/:id", ToDoHandler.PatchToDo)
-	router.DELETE("user/todos/:id", ToDoHandler.DeleteToDo)
+	router.GET("users", UserHandler.GetUsers)
+	router.GET("users/:user_id", UserHandler.GetUser)
+	router.POST("users", UserHandler.PostUser)
+	router.PATCH("users/:user_id", UserHandler.PatchUser)
+	router.DELETE("users/:user_id", UserHandler.DeleteUser)
+
+	router.GET("users/:user_id/todos", ToDoHandler.GetToDos)
+	router.GET("users/:user_id/todos/:todo_id", ToDoHandler.GetToDo)
+	router.POST("users/:user_id/todos", ToDoHandler.PostToDo)
+	router.PATCH("users/:user_id/todos/:todo_id", ToDoHandler.PatchToDo)
+	router.DELETE("users/:user_id/todos/:todo_id", ToDoHandler.DeleteToDo)
 
 	router.Run(env.RouterUrl)
 }
