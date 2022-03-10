@@ -8,9 +8,8 @@ import (
 )
 
 type UserRepositoryInterface interface {
-	Insert(user *entities.User) error
+	Insert(user *entities.User) (error)
 	Update(user *entities.User) (*entities.User, error)
-	Delete(user *entities.User) error
 	FindAll(user []*entities.User) ([]*entities.User, error)
 	FindByID(user *entities.User) (*entities.User, error)
 }
