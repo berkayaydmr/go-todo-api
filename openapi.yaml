@@ -255,23 +255,6 @@ components:
           type: integer
         email:
           type: string
-        password:
-          type: string
-        status:
-          type: string
-          enum:
-          - Active
-          - Pending
-          - Passive
-    UserResponse: 
-      title: User Response
-      properties:
-        id:
-          type: integer
-        email:
-          type: string
-        password:
-          type: string
         status:
           type: string
           enum:
