@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct {
@@ -19,8 +20,8 @@ func NewUserHandler(UserRepo repository.UserRepositoryInterface) *UserHandler {
 	return &UserHandler{UserRepository: UserRepo}
 }
 
-func (handler *UserHandler) PostUser(c *gin.Context){
-	var requestUser =  &models.UserRequest{}
+func (handler *UserHandler) PostUser(c *gin.Context) {
+	var requestUser = &models.UserRequest{}
 
 	if err := c.ShouldBind(&requestUser); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
@@ -33,22 +34,38 @@ func (handler *UserHandler) PostUser(c *gin.Context){
 		return
 	}
 
-	var newUser = &entities.User{
-		Email: requestUser.Email,
-		Password: requestUser.Password,
+	hashed, err := bcrypt.GenerateFromPassword([]byte(requestUser.Password), 8)
+	if err != nil {
+		zap.S().Error("Error: ", err)
+		c.JSON(http.StatusBadGateway, nil)
+		return
 	}
 
-	err := handler.UserRepository.Insert(newUser)
+	var newUser = &entities.User{
+		Email:    requestUser.Email,
+		Password: string(hashed),
+	}
+
+	err = handler.UserRepository.Insert(newUser)
 	if err != nil {
 		zap.S().Error("Error: ", err)
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 
-	c.JSON(http.StatusCreated, newUser)
+	var userResponse = &models.UserResponse{
+		Id:        newUser.Id,
+		Email:     newUser.Email,
+		Status:    newUser.Status,
+		CreatedAt: newUser.CreatedAt,
+		UpdatedAt: newUser.UpdatedAt,
+		DeletedAt: newUser.DeletedAt,
+	}
+
+	c.JSON(http.StatusCreated, userResponse)
 }
 
-func (handler *UserHandler) PatchUser(c *gin.Context){
+func (handler *UserHandler) PatchUser(c *gin.Context) {
 	var user entities.User
 	id, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
@@ -57,7 +74,7 @@ func (handler *UserHandler) PatchUser(c *gin.Context){
 		return
 	}
 	user.Id = id
-	
+
 	record, err := handler.UserRepository.FindByID(&user)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
@@ -69,7 +86,7 @@ func (handler *UserHandler) PatchUser(c *gin.Context){
 		c.JSON(http.StatusNotFound, nil)
 		return
 	}
-	
+
 	var requestUser = &models.UserPatchRequest{}
 	if err := c.ShouldBind(&requestUser); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
@@ -93,19 +110,28 @@ func (handler *UserHandler) PatchUser(c *gin.Context){
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	var userResponse = &models.UserResponse{
+		Id:        user.Id,
+		Email:     user.Email,
+		Status:    user.Status,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeletedAt: user.DeletedAt,
+	}
+
+	c.JSON(http.StatusOK, userResponse)
 }
 
-func (handler *UserHandler) DeleteUser(c *gin.Context)  {
-	userId, err := strconv.ParseUint(c.Param("user_id"),10,64)
+func (handler *UserHandler) DeleteUser(c *gin.Context) {
+	userId, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
-		return 
+		return
 	}
 
 	var deleteUser = &entities.User{
-		Id: userId,
+		Id:     userId,
 		Status: "Passive",
 	}
 
@@ -123,10 +149,10 @@ func (handler *UserHandler) DeleteUser(c *gin.Context)  {
 		return
 	}
 
-	c.JSON(http.StatusNoContent,nil)
+	c.JSON(http.StatusNoContent, nil)
 }
 
-func (handler *UserHandler) GetUser(c *gin.Context)  {
+func (handler *UserHandler) GetUser(c *gin.Context) {
 	var user entities.User
 	id, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	user.Id = id
@@ -147,10 +173,19 @@ func (handler *UserHandler) GetUser(c *gin.Context)  {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	var userResponse = &models.UserResponse{
+		Id:        user.Id,
+		Email:     user.Email,
+		Status:    user.Status,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeletedAt: user.DeletedAt,
+	}
+
+	c.JSON(http.StatusOK, userResponse)
 }
 
-func (handler *UserHandler) GetUsers(c *gin.Context)  {
+func (handler *UserHandler) GetUsers(c *gin.Context) {
 	var user []*entities.User
 	toDos, err := handler.UserRepository.FindAll(user)
 	if err != nil {
@@ -159,5 +194,17 @@ func (handler *UserHandler) GetUsers(c *gin.Context)  {
 		return
 	}
 
-	c.JSON(http.StatusOK, toDos)
+	var toDosResponse = make([]models.UserResponse, len(toDos))
+
+	for i := 0; i < len(toDos); i++ {
+		toDosResponse[i] = models.UserResponse{
+			Id:        toDos[i].Id,
+			Email:     toDos[i].Email,
+			Status:    toDos[i].Status,
+			CreatedAt: toDos[i].CreatedAt,
+			UpdatedAt: toDos[i].UpdatedAt,
+			DeletedAt: toDos[i].DeletedAt,
+		}
+	}
+	c.JSON(http.StatusOK, toDosResponse)
 }
