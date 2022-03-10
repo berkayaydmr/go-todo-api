@@ -27,13 +27,13 @@ func (_m *UserRepositoryInterface) Delete(user *entities.User) error {
 	return r0
 }
 
-// FindAll provides a mock function with given fields: result
-func (_m *UserRepositoryInterface) FindAll(result []*entities.User) ([]*entities.User, error) {
-	ret := _m.Called(result)
+// FindAll provides a mock function with given fields: user
+func (_m *UserRepositoryInterface) FindAll(user []*entities.User) ([]*entities.User, error) {
+	ret := _m.Called(user)
 
 	var r0 []*entities.User
 	if rf, ok := ret.Get(0).(func([]*entities.User) []*entities.User); ok {
-		r0 = rf(result)
+		r0 = rf(user)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*entities.User)
@@ -42,7 +42,7 @@ func (_m *UserRepositoryInterface) FindAll(result []*entities.User) ([]*entities
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]*entities.User) error); ok {
-		r1 = rf(result)
+		r1 = rf(user)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -50,13 +50,13 @@ func (_m *UserRepositoryInterface) FindAll(result []*entities.User) ([]*entities
 	return r0, r1
 }
 
-// FindByID provides a mock function with given fields: result
-func (_m *UserRepositoryInterface) FindByID(result *entities.User) (*entities.User, error) {
-	ret := _m.Called(result)
+// FindByID provides a mock function with given fields: user
+func (_m *UserRepositoryInterface) FindByID(user *entities.User) (*entities.User, error) {
+	ret := _m.Called(user)
 
 	var r0 *entities.User
 	if rf, ok := ret.Get(0).(func(*entities.User) *entities.User); ok {
-		r0 = rf(result)
+		r0 = rf(user)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*entities.User)
@@ -65,7 +65,7 @@ func (_m *UserRepositoryInterface) FindByID(result *entities.User) (*entities.Us
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*entities.User) error); ok {
-		r1 = rf(result)
+		r1 = rf(user)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -88,24 +88,15 @@ func (_m *UserRepositoryInterface) Insert(user *entities.User) error {
 }
 
 // Update provides a mock function with given fields: user
-func (_m *UserRepositoryInterface) Update(user *entities.User) (*entities.User, error) {
+func (_m *UserRepositoryInterface) Update(user *entities.User) error {
 	ret := _m.Called(user)
 
-	var r0 *entities.User
-	if rf, ok := ret.Get(0).(func(*entities.User) *entities.User); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*entities.User) error); ok {
 		r0 = rf(user)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entities.User)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*entities.User) error); ok {
-		r1 = rf(user)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
