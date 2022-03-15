@@ -2,8 +2,48 @@ package mocks
 
 import (
 	"go-todo-api/entities"
+	"go-todo-api/models"
 	"time"
 )
+
+func User() *entities.User {
+	Id := uint64(0)
+	Email := "email"
+	Password := ""
+	Status := "Pending"
+	return &entities.User{
+		Id:        Id,
+		Email:     Email,
+		Password:  Password,
+		Status:    Status,
+	}
+}
+
+func UserModelResponse() *models.UserResponse {
+	Id := uint64(0)
+	Email := "email"
+	Status := "Pending"
+	CreatedAt := time.Time{}
+	UpdatedAt := time.Time{}
+	return &models.UserResponse{
+		Id:        Id,
+		Email:     Email,
+		Status:    Status,
+		CreatedAt: CreatedAt,
+		UpdatedAt: UpdatedAt,
+	}
+}
+
+func UserRequestModel() models.UserRequest {
+	Email := "email"
+	Password := "password"
+	PasswordConfirm := "password"
+	return models.UserRequest{
+		Email:           Email,
+		Password:        Password,
+		PasswordConfirm: PasswordConfirm,
+	}
+}
 
 func ToDoResponse() *entities.ToDo {
 	Id := uint64(0)
@@ -23,7 +63,6 @@ func ToDoResponse() *entities.ToDo {
 func ToDosResponse() []*entities.ToDo {
 	return []*entities.ToDo{}
 }
-
 
 func ToDoPatchResponse() *entities.ToDo {
 	Id := uint64(0)

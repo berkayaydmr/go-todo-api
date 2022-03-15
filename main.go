@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	// TODO: newdevelopment
 	logger, err := zap.NewProduction()
 	if err != nil {
 		logger.Error("Logger initialize error: ", zap.Error(err))

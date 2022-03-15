@@ -19,7 +19,7 @@ type ToDoRepository struct {
 	db *gorm.DB
 }
 
-func NewToDoRepository(db *gorm.DB) *ToDoRepository {
+func NewToDoRepository(db *gorm.DB) ToDoRepositoryInterface {
 	return &ToDoRepository{db}
 }
 
@@ -32,7 +32,7 @@ func (repository *ToDoRepository) Insert(i *entities.ToDo) (error) {
 }
 
 func (repository *ToDoRepository) Update(i *entities.ToDo) error {
-	err := repository.db.Model(&i).Where("todo_id = ?", i.Id).Save(&i).Error
+	err := repository.db.Save(&i).Error
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (repository *ToDoRepository) FindAll(userID *entities.ToDo) ([]*entities.To
 }
 
 func (repository *ToDoRepository) FindByID(result *entities.ToDo) (*entities.ToDo, error) {
-	err := repository.db.Where("user_id = ?", result.UserId).First(&result, int(result.Id)).Error
+	err := repository.db.First(&result).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil,nil

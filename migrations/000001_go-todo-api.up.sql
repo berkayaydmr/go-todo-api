@@ -15,7 +15,5 @@ CREATE TABLE to_dos (
     "status" varchar NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT (now()),
     "updated_at" timestamp NOT NULL DEFAULT (now()),
-    CONSTRAINT fk_user
-        FOREIGN KEY(user_id)
-            REFERENCES users(user_id)
+    CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(user_id)
 );

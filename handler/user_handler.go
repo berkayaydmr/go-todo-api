@@ -4,12 +4,12 @@ import (
 	"go-todo-api/entities"
 	"go-todo-api/models"
 	"go-todo-api/repository"
+	"go-todo-api/utils"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct {
@@ -23,7 +23,7 @@ func NewUserHandler(UserRepo repository.UserRepositoryInterface) *UserHandler {
 func (handler *UserHandler) PostUser(c *gin.Context) {
 	var requestUser = &models.UserRequest{}
 
-	if err := c.ShouldBind(&requestUser); err != nil {
+	if err := c.BindJSON(&requestUser); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
 		return
@@ -34,19 +34,15 @@ func (handler *UserHandler) PostUser(c *gin.Context) {
 		return
 	}
 
-	hashed, err := bcrypt.GenerateFromPassword([]byte(requestUser.Password), 8)
-	if err != nil {
-		zap.S().Error("Error: ", err)
-		c.JSON(http.StatusBadGateway, nil)
-		return
-	}
+	hashed := utils.HashPassword(requestUser.Password)
 
 	var newUser = &entities.User{
 		Email:    requestUser.Email,
-		Password: string(hashed),
+		Password: hashed,
+		Status: "Pending", //test için
 	}
 
-	err = handler.UserRepository.Insert(newUser)
+	err := handler.UserRepository.Insert(newUser)
 	if err != nil {
 		zap.S().Error("Error: ", err)
 		c.JSON(http.StatusInternalServerError, nil)
@@ -88,7 +84,7 @@ func (handler *UserHandler) PatchUser(c *gin.Context) {
 	}
 
 	var requestUser = &models.UserPatchRequest{}
-	if err := c.ShouldBind(&requestUser); err != nil {
+	if err := c.BindJSON(&requestUser); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
 		return
@@ -99,9 +95,8 @@ func (handler *UserHandler) PatchUser(c *gin.Context) {
 		return
 	}
 
-	if requestUser.Password != nil {
-		user.Password = *requestUser.Password
-	}
+	hash := utils.HashPassword(requestUser.Password)
+	user.Password = hash
 
 	err = handler.UserRepository.Update(&user)
 	if err != nil {

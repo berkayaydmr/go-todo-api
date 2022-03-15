@@ -107,7 +107,7 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, todo)
 }
 
 func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
