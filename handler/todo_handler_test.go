@@ -3,7 +3,6 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"go-todo-api/entities"
 	"go-todo-api/mocks"
@@ -14,11 +13,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestPostToDo_OK(t *testing.T) {
 	mockToDoRepo := mocks.ToDoRepositoryInterface{}
+	mockUserRepo := mocks.UserRepositoryInterface{}
 	toDo := mocks.ToDoResponse()
+	user := mocks.User()
+	mockUserRepo.On("Insert", user).Return(nil)
 	mockToDoRepo.On("Insert", toDo).Return(nil)
 
 	toDoRequest := models.ToDoRequest{Details: "testDetails", Status: "On Progress"}
@@ -26,7 +29,8 @@ func TestPostToDo_OK(t *testing.T) {
 	bin, _ := json.Marshal(toDoRequest)
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
-	c.Request = httptest.NewRequest("POST", "/user/todos", bytes.NewBuffer(bin))
+	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}}
+	c.Request = httptest.NewRequest("POST", "/users/:user_id/todos", bytes.NewBuffer(bin))
 	handler := NewToDoHandler(&mockToDoRepo)
 	handler.PostToDo(c)
 	assert.Equal(t, http.StatusCreated, recorder.Result().StatusCode)
@@ -42,7 +46,10 @@ func TestPostToDo_OK(t *testing.T) {
 func TestPostToDo_FAIL(t *testing.T) {
 	t.Run("POST To-do", func(t *testing.T) {
 		mockToDoRepo := mocks.ToDoRepositoryInterface{}
+		mockUserRepo := mocks.UserRepositoryInterface{}
+		user := mocks.User()
 		toDo := mocks.ToDoResponse()
+		mockUserRepo.On("Insert", user).Return(nil)
 		mockToDoRepo.On("Insert", toDo).Return(toDo, nil)
 
 		recorder := httptest.NewRecorder()
@@ -56,40 +63,42 @@ func TestPostToDo_FAIL(t *testing.T) {
 
 func TestPatchToDo_OK(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
+	mockUserRepo := mocks.UserRepositoryInterface{}
+	user := mocks.User()
 	toDo := mocks.ToDoResponse()
 	toDoo := &entities.ToDo{}
 	toDoPatch := mocks.ToDoPatchResponse()
+
+	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindByID", toDoo).Return(toDo, nil)
-	mockToDoRepository.On("Update", toDoPatch).Return(toDoPatch, nil)
+	mockToDoRepository.On("Update", toDo).Return(nil)
 
-	var details string = "Updated Detail"
-	var status string = "Done"
-	toDoRequest := models.ToDoPatchRequest{Details: &details, Status: &status}
-
-	bin, _ := json.Marshal(toDoRequest)
+	bin, _ := json.Marshal(toDoPatch)
 	handler := NewToDoHandler(&mockToDoRepository)
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
-	c.Params = gin.Params{gin.Param{Key: "id", Value: "0"}}
-	c.Request = httptest.NewRequest("PUT", "/user/todos/0", bytes.NewBuffer(bin))
+	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}, gin.Param{Key: "todo_id", Value: "0"}}
+	c.Request = httptest.NewRequest("PUT", "/users/:user_id/todos/:todo_id", bytes.NewBuffer(bin))
 	handler.PatchToDo(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
-
 	var body *entities.ToDo
 	err := json.Unmarshal(recorder.Body.Bytes(), &body)
 	if err != nil {
-		fmt.Print(err)
+		zap.S().Error("Error: ", zap.Error(err))
 	}
 	assert.Equal(t, toDoPatch, body)
-
 }
 
 func TestPatchToDo_Fail(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
+	mockUserRepo := mocks.UserRepositoryInterface{}
+	user := mocks.User()
+	toDo := mocks.ToDoResponse()
 	toDoo := &entities.ToDo{}
-	toDoPatch := models.ToDoRequest{}
-	mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
-	mockToDoRepository.On("Update", toDoPatch).Return(toDoPatch, nil)
+
+	mockUserRepo.On("Insert", user).Return(user, nil)
+	mockToDoRepository.On("FindByID", toDoo).Return(toDo, nil)
+	mockToDoRepository.On("Update", toDo).Return(nil)
 
 	var details string = "Updated Detail"
 	var status string = "Done"
@@ -107,13 +116,17 @@ func TestPatchToDo_Fail(t *testing.T) {
 
 func TestDeleteToDo_OK(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
+	mockUserRepo := mocks.UserRepositoryInterface{}
+	user := mocks.User()
 	toDoo := &entities.ToDo{}
+
+	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
 	mockToDoRepository.On("Delete", toDoo).Return(nil)
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
-	c.Params = gin.Params{gin.Param{Key: "id", Value: "0"}}
+	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}, gin.Param{Key: "todo_id", Value: "0"}}
 	c.Request = httptest.NewRequest("DELETE", "/user/todos", nil)
 	handler := NewToDoHandler(&mockToDoRepository)
 	handler.DeleteToDo(c)
@@ -122,7 +135,11 @@ func TestDeleteToDo_OK(t *testing.T) {
 
 func TestDeleteToDo_Fail(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
+	mockUserRepo := mocks.UserRepositoryInterface{}
+	user := mocks.User()
 	toDoo := &entities.ToDo{}
+
+	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
 	mockToDoRepository.On("Delete", toDoo).Return(nil)
 
@@ -137,13 +154,20 @@ func TestDeleteToDo_Fail(t *testing.T) {
 
 func TestGetToDos_OK(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
+	mockUserRepo := mocks.UserRepositoryInterface{}
+	user := mocks.User()
+	var toDo  = &entities.ToDo{
+		UserId: user.Id,
+	}
 	var toDos []*entities.ToDo
 
-	mockToDoRepository.On("FindAll", toDos).Return(toDos, nil)
+	mockUserRepo.On("Insert", user).Return(user, nil)
+	mockToDoRepository.On("FindAll", toDo).Return(toDos, nil)
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
-	c.Request = httptest.NewRequest("GET", "/user/todos", nil)
+	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}}
+	c.Request = httptest.NewRequest("GET", "/users/:user_id/todos", nil)
 	handler := NewToDoHandler(&mockToDoRepository)
 	handler.GetToDos(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
@@ -151,7 +175,7 @@ func TestGetToDos_OK(t *testing.T) {
 	var body []*entities.ToDo
 	err := json.Unmarshal(recorder.Body.Bytes(), &body)
 	if err != nil {
-		fmt.Print(err)
+		zap.S().Error("Error: ", zap.Error(err))
 	}
 	assert.Equal(t, toDos, body)
 }
@@ -159,15 +183,14 @@ func TestGetToDos_OK(t *testing.T) {
 func TestGetToDos_Fail(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
 	var toDos []*entities.ToDo
-	err := errors.New("err")
-	mockToDoRepository.On("FindAll", toDos).Return(nil, err)
+	mockToDoRepository.On("FindAll", toDos).Return(toDos, nil)
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
-	c.Request = httptest.NewRequest("GET", "/user/todos", nil)
+	c.Request = httptest.NewRequest("GET", "/users/:user_id/todos", nil)
 	handler := NewToDoHandler(&mockToDoRepository)
 	handler.GetToDos(c)
-	assert.Equal(t, http.StatusInternalServerError, recorder.Result().StatusCode)
+	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
 }
 
 func TestGetToDo_OK(t *testing.T) {
@@ -177,8 +200,8 @@ func TestGetToDo_OK(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
-	c.Params = gin.Params{gin.Param{Key: "id", Value: "0"}}
-	c.Request = httptest.NewRequest("GET", "/user/todos/0", nil)
+	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}, gin.Param{Key: "todo_id", Value: "0"}}
+	c.Request = httptest.NewRequest("GET", "/users/:user_id/todos/:todo_id", nil)
 	handler := NewToDoHandler(&mockToDoRepository)
 	handler.GetToDo(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
@@ -186,7 +209,7 @@ func TestGetToDo_OK(t *testing.T) {
 	var body *entities.ToDo
 	err := json.Unmarshal(recorder.Body.Bytes(), &body)
 	if err != nil {
-		fmt.Print(err)
+		zap.S().Error("Error: ", zap.Error(err))
 	}
 	assert.Equal(t, toDo, body)
 }
