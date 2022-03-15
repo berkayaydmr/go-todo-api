@@ -9,4 +9,5 @@ type ToDo struct {
 	Status    string    `gorm:"column:status;default:To-Do"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
+	User      User      `gorm:"foreingKey:UserId;"`
 }

@@ -45,18 +45,18 @@ func UserRequestModel() models.UserRequest {
 	}
 }
 
-func ToDoResponse() *entities.ToDo {
+func ToDoResponse() *models.ToDo {
 	Id := uint64(0)
 	Details := "testDetails"
 	Status := "On Progress"
 	CreatedAt := time.Time{}
 	UpdatedAt := time.Time{}
-	return &entities.ToDo{
-		Id:        Id,
+	return &models.ToDo{
+		ID:        Id,
 		Details:   Details,
 		Status:    Status,
-		CreatedAt: CreatedAt,
-		UpdatedAt: UpdatedAt,
+		CreatedAt: CreatedAt.String(),
+		UpdatedAt: UpdatedAt.String(),
 	}
 }
 
@@ -64,17 +64,17 @@ func ToDosResponse() []*entities.ToDo {
 	return []*entities.ToDo{}
 }
 
-func ToDoPatchResponse() *entities.ToDo {
+func ToDoPatchResponse() *models.ToDo {
 	Id := uint64(0)
 	Details := "Updated Detail"
 	Status := "Done"
 	CreatedAt := time.Time{}
 	UpdatedAt := time.Time{}
-	return &entities.ToDo{
-		Id:        Id,
+	return &models.ToDo{
+		ID:        Id,
 		Details:   Details,
 		Status:    Status,
-		CreatedAt: CreatedAt,
-		UpdatedAt: UpdatedAt,
+		CreatedAt: CreatedAt.String(),
+		UpdatedAt: UpdatedAt.String(),
 	}
 }

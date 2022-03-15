@@ -18,10 +18,10 @@ import (
 
 func TestPostToDo_OK(t *testing.T) {
 	mockToDoRepo := mocks.ToDoRepositoryInterface{}
-	mockUserRepo := mocks.UserRepositoryInterface{}
-	toDo := mocks.ToDoResponse()
-	user := mocks.User()
-	mockUserRepo.On("Insert", user).Return(nil)
+
+	toDoResponse := mocks.ToDoResponse()
+	toDo := &entities.ToDo{Details: "testDetails", Status: "On Progress"}
+
 	mockToDoRepo.On("Insert", toDo).Return(nil)
 
 	toDoRequest := models.ToDoRequest{Details: "testDetails", Status: "On Progress"}
@@ -35,12 +35,12 @@ func TestPostToDo_OK(t *testing.T) {
 	handler.PostToDo(c)
 	assert.Equal(t, http.StatusCreated, recorder.Result().StatusCode)
 
-	var body *entities.ToDo
+	var body *models.ToDo
 	err := json.Unmarshal(recorder.Body.Bytes(), &body)
 	if err != nil {
 		fmt.Print(err)
 	}
-	assert.Equal(t, toDo, body)
+	assert.Equal(t, toDoResponse, body)
 }
 
 func TestPostToDo_FAIL(t *testing.T) {
@@ -63,13 +63,10 @@ func TestPostToDo_FAIL(t *testing.T) {
 
 func TestPatchToDo_OK(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
-	mockUserRepo := mocks.UserRepositoryInterface{}
-	user := mocks.User()
-	toDo := mocks.ToDoResponse()
+	toDo := &entities.ToDo{Details: "Updated Detail", Status: "Done"}
 	toDoo := &entities.ToDo{}
 	toDoPatch := mocks.ToDoPatchResponse()
 
-	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindByID", toDoo).Return(toDo, nil)
 	mockToDoRepository.On("Update", toDo).Return(nil)
 
@@ -81,7 +78,8 @@ func TestPatchToDo_OK(t *testing.T) {
 	c.Request = httptest.NewRequest("PUT", "/users/:user_id/todos/:todo_id", bytes.NewBuffer(bin))
 	handler.PatchToDo(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
-	var body *entities.ToDo
+
+	var body *models.ToDo
 	err := json.Unmarshal(recorder.Body.Bytes(), &body)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
@@ -156,10 +154,11 @@ func TestGetToDos_OK(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
 	mockUserRepo := mocks.UserRepositoryInterface{}
 	user := mocks.User()
-	var toDo  = &entities.ToDo{
+	var toDo = &entities.ToDo{
 		UserId: user.Id,
 	}
 	var toDos []*entities.ToDo
+	var toDosResponse = []models.ToDo{}
 
 	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindAll", toDo).Return(toDos, nil)
@@ -172,12 +171,12 @@ func TestGetToDos_OK(t *testing.T) {
 	handler.GetToDos(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
 
-	var body []*entities.ToDo
+	var body []models.ToDo
 	err := json.Unmarshal(recorder.Body.Bytes(), &body)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 	}
-	assert.Equal(t, toDos, body)
+	assert.Equal(t, toDosResponse, body)
 }
 
 func TestGetToDos_Fail(t *testing.T) {
@@ -196,6 +195,11 @@ func TestGetToDos_Fail(t *testing.T) {
 func TestGetToDo_OK(t *testing.T) {
 	mockToDoRepository := mocks.ToDoRepositoryInterface{}
 	toDo := &entities.ToDo{}
+	toDoResponse := models.ToDo{
+		CreatedAt: toDo.CreatedAt.String(),
+		UpdatedAt: toDo.UpdatedAt.String(),
+	}
+
 	mockToDoRepository.On("FindByID", toDo).Return(toDo, nil)
 
 	recorder := httptest.NewRecorder()
@@ -206,12 +210,12 @@ func TestGetToDo_OK(t *testing.T) {
 	handler.GetToDo(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
 
-	var body *entities.ToDo
+	var body models.ToDo
 	err := json.Unmarshal(recorder.Body.Bytes(), &body)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 	}
-	assert.Equal(t, toDo, body)
+	assert.Equal(t, toDoResponse, body)
 }
 
 func TestGetToDo_Fail(t *testing.T) {

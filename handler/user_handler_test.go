@@ -67,10 +67,11 @@ func TestPostUser_FAIL(t *testing.T) {
 func TestPatchUser(t *testing.T) {
 	mockUserRepository := mocks.UserRepositoryInterface{}
 	userPatchRequest := &models.UserPatchRequest{Password: "1111", PasswordConfirm: "1111"}
+	userUpdate := &entities.User{Id: 0, Password: utils.HashPassword(userPatchRequest.Password)}
 	user := &entities.User{Id: 0}
 
 	mockUserRepository.On("FindByID", user).Return(user, nil)
-	mockUserRepository.On("Update", user).Return(nil)
+	mockUserRepository.On("Update", userUpdate).Return(nil)
 
 	bin, _ := json.Marshal(userPatchRequest)
 	recorder := httptest.NewRecorder()
