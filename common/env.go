@@ -10,6 +10,7 @@ import (
 type Enviroment struct {
 	DatabaseUrl string
 	RouterUrl   string
+	Debug	bool
 }
 
 func GetEnviroment() *Enviroment {
@@ -23,9 +24,15 @@ func GetEnviroment() *Enviroment {
 	appHost := os.Getenv("APPLICATION_HOST")
 	appPort := os.Getenv("APPLICATION_PORT")
 	routerUrl := appHost + appPort
+	
+	var debug bool
+	if os.Getenv("LOGGER") == "true" {
+		debug = true
+	}
 
 	return &Enviroment{
 		DatabaseUrl: databaseUrl,
 		RouterUrl:   routerUrl,
+		Debug: debug,
 	}
 }

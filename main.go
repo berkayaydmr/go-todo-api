@@ -6,20 +6,15 @@ import (
 	"go-todo-api/repository"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func main() {
-	// TODO: newdevelopment
-	logger, err := zap.NewProduction()
-	if err != nil {
-		logger.Error("Logger initialize error: ", zap.Error(err))
-	}
-	zap.ReplaceGlobals(logger)
-
 	env := common.GetEnviroment()
-	db := common.ConnectDB(env.DatabaseUrl)
 
+	logger := common.NewLogger(env.Debug)
+	logger.Info("logger initilazed")
+
+	db := common.ConnectDB(env.DatabaseUrl)
 	ToDoRepository := repository.NewToDoRepository(db)
 	UserRepository := repository.NewUserRepository(db)
 	ToDoHandler := handler.NewToDoHandler(ToDoRepository)
