@@ -23,10 +23,10 @@ func GetEnviroment() *Enviroment {
 	databaseUrl := os.Getenv("DSN")
 	appHost := os.Getenv("APPLICATION_HOST")
 	appPort := os.Getenv("APPLICATION_PORT")
-	routerUrl := appHost + appPort
+	routerUrl := appHost + ":" + appPort
 	
 	var debug bool
-	if os.Getenv("LOGGER") == "true" {
+	if os.Getenv("DEBUG") == "true" {
 		debug = true
 	}
 
