@@ -39,7 +39,7 @@ func (handler *UserHandler) PostUser(c *gin.Context) {
 	var newUser = &entities.User{
 		Email:    requestUser.Email,
 		Password: hashed,
-		Status: "Pending", //test için
+		Status:   "Pending", //test için
 	}
 
 	err := handler.UserRepository.Insert(newUser)
@@ -49,27 +49,17 @@ func (handler *UserHandler) PostUser(c *gin.Context) {
 		return
 	}
 
-	var userResponse = &models.UserResponse{
-		Id:        newUser.Id,
-		Email:     newUser.Email,
-		Status:    newUser.Status,
-		CreatedAt: newUser.CreatedAt,
-		UpdatedAt: newUser.UpdatedAt,
-		DeletedAt: newUser.DeletedAt,
-	}
-
-	c.JSON(http.StatusCreated, userResponse)
+	c.JSON(http.StatusCreated, utils.UserApiResponse(newUser))
 }
 
 func (handler *UserHandler) PatchUser(c *gin.Context) {
-	var user entities.User
 	id, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-	user.Id = id
+	user := entities.User{Id: id}
 
 	record, err := handler.UserRepository.FindByID(&user)
 	if err != nil {
@@ -95,6 +85,11 @@ func (handler *UserHandler) PatchUser(c *gin.Context) {
 		return
 	}
 
+	if utils.HashPassword(requestUser.OldPassword) != user.Password {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Current Password not matched"})
+		return
+	}
+
 	hash := utils.HashPassword(requestUser.Password)
 	user.Password = hash
 
@@ -105,16 +100,7 @@ func (handler *UserHandler) PatchUser(c *gin.Context) {
 		return
 	}
 
-	var userResponse = &models.UserResponse{
-		Id:        user.Id,
-		Email:     user.Email,
-		Status:    user.Status,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		DeletedAt: user.DeletedAt,
-	}
-
-	c.JSON(http.StatusOK, userResponse)
+	c.JSON(http.StatusOK, utils.UserApiResponse(&user))
 }
 
 func (handler *UserHandler) DeleteUser(c *gin.Context) {
@@ -124,38 +110,8 @@ func (handler *UserHandler) DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-
-	var deleteUser = &entities.User{
-		Id:     userId,
-		Status: "Passive",
-	}
-
-	err = handler.UserRepository.Update(deleteUser)
-	if err != nil {
-		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-
-	err = handler.UserRepository.Delete(deleteUser)
-	if err != nil {
-		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-
-	c.JSON(http.StatusNoContent, nil)
-}
-
-func (handler *UserHandler) GetUser(c *gin.Context) {
-	var user entities.User
-	id, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
-	user.Id = id
-	if err != nil {
-		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusBadRequest, nil)
-		return
-	}
+	
+	user := entities.User{Id: userId}
 	record, err := handler.UserRepository.FindByID(&user)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
@@ -168,16 +124,40 @@ func (handler *UserHandler) GetUser(c *gin.Context) {
 		return
 	}
 
-	var userResponse = &models.UserResponse{
-		Id:        user.Id,
-		Email:     user.Email,
-		Status:    user.Status,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		DeletedAt: user.DeletedAt,
+	user.Status = "PASSIVE"
+	
+	err = handler.UserRepository.Update(&user)
+	if err != nil {
+		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, userResponse)
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func (handler *UserHandler) GetUser(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
+	user := entities.User{Id: id}
+	if err != nil {
+		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	record, err := handler.UserRepository.FindByID(&user)
+	if err != nil {
+		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+	if record == nil {
+		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusNotFound, nil)
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.UserApiResponse(&user))
 }
 
 func (handler *UserHandler) GetUsers(c *gin.Context) {

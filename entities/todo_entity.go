@@ -3,7 +3,7 @@ package entities
 import "time"
 
 type ToDo struct {
-	Id        uint64    `gorm:"primaryKey;column:todo_id"`
+	Id        uint64    `gorm:"primaryKey;column:id"`
 	UserId    uint64    `gorm:"column:user_id"`
 	User      User      `gorm:"foreingKey:UserId;"`
 	Details   string    `gorm:"column:details;"`

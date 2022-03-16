@@ -4,6 +4,7 @@ import (
 	"go-todo-api/entities"
 	"go-todo-api/models"
 	"go-todo-api/repository"
+	"go-todo-api/utils"
 	"net/http"
 	"strconv"
 
@@ -52,15 +53,7 @@ func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 		return
 	}
 
-	var toDoResponse = &models.ToDo{
-		ID: newToDo.Id,
-		Details: newToDo.Details,
-		Status: newToDo.Status,
-		CreatedAt: newToDo.CreatedAt.String(),
-		UpdatedAt: newToDo.UpdatedAt.String(),
-	}
-
-	c.JSON(http.StatusCreated, toDoResponse)
+	c.JSON(http.StatusCreated, utils.ToDoApiResponse(newToDo))
 }
 
 func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
@@ -116,14 +109,7 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 		return
 	}
 
-	var toDoResponse = &models.ToDo{
-		ID: todo.Id,
-		Details: todo.Details,
-		Status: todo.Status,
-		CreatedAt: todo.CreatedAt.String(),
-		UpdatedAt: todo.UpdatedAt.String(),
-	}
-	c.JSON(http.StatusOK, toDoResponse)
+	c.JSON(http.StatusOK, utils.ToDoApiResponse(todo))
 }
 
 func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
@@ -234,14 +220,5 @@ func (handler *ToDoHandler) GetToDo(c *gin.Context) {
 		return
 	}
 
-	var toDoResponse = models.ToDo{
-		ID:        toDo.Id,
-		UserId:    toDo.UserId,
-		Details:   toDo.Details,
-		Status:    toDo.Status,
-		CreatedAt: toDo.CreatedAt.String(),
-		UpdatedAt: toDo.UpdatedAt.String(),
-	}
-
-	c.JSON(200, toDoResponse)
+	c.JSON(200, utils.ToDoApiResponse(toDo))
 }

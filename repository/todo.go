@@ -11,7 +11,7 @@ type ToDoRepositoryInterface interface {
 	Insert(i *entities.ToDo) error
 	Update(i *entities.ToDo) error
 	Delete(i *entities.ToDo) error
-	FindAll(userID *entities.ToDo) ([]*entities.ToDo, error)
+	FindAll(user *entities.ToDo) ([]*entities.ToDo, error)
 	FindByID(result *entities.ToDo) (*entities.ToDo, error)
 }
 
@@ -25,30 +25,21 @@ func NewToDoRepository(db *gorm.DB) ToDoRepositoryInterface {
 
 func (repository *ToDoRepository) Insert(i *entities.ToDo) (error) {
 	err := repository.db.Create(&i).Error
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (repository *ToDoRepository) Update(i *entities.ToDo) error {
 	err := repository.db.Save(&i).Error
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (repository *ToDoRepository) Delete(i *entities.ToDo) error {
 	return repository.db.Delete(&i).Error
 }
 
-func (repository *ToDoRepository) FindAll(userID *entities.ToDo) ([]*entities.ToDo, error) {
+func (repository *ToDoRepository) FindAll(user *entities.ToDo) ([]*entities.ToDo, error) {
 	var toDos []*entities.ToDo
-	err := repository.db.Where("user_id = ?", userID.UserId).Find(&toDos).Error
-	if err != nil {
-		return nil, err
-	}
+	err := repository.db.Where("user_id = ?", user.UserId).Find(&toDos).Error
 	return toDos, err
 }
 
