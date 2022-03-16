@@ -27,13 +27,13 @@ func (_m *ToDoRepositoryInterface) Delete(i *entities.ToDo) error {
 	return r0
 }
 
-// FindAll provides a mock function with given fields: userID
-func (_m *ToDoRepositoryInterface) FindAll(userID *entities.ToDo) ([]*entities.ToDo, error) {
-	ret := _m.Called(userID)
+// FindAll provides a mock function with given fields: user
+func (_m *ToDoRepositoryInterface) FindAll(user *entities.ToDo) ([]*entities.ToDo, error) {
+	ret := _m.Called(user)
 
 	var r0 []*entities.ToDo
 	if rf, ok := ret.Get(0).(func(*entities.ToDo) []*entities.ToDo); ok {
-		r0 = rf(userID)
+		r0 = rf(user)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*entities.ToDo)
@@ -42,7 +42,7 @@ func (_m *ToDoRepositoryInterface) FindAll(userID *entities.ToDo) ([]*entities.T
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*entities.ToDo) error); ok {
-		r1 = rf(userID)
+		r1 = rf(user)
 	} else {
 		r1 = ret.Error(1)
 	}

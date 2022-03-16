@@ -13,20 +13,6 @@ type UserRepositoryInterface struct {
 	mock.Mock
 }
 
-// Delete provides a mock function with given fields: user
-func (_m *UserRepositoryInterface) Delete(user *entities.User) error {
-	ret := _m.Called(user)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*entities.User) error); ok {
-		r0 = rf(user)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // FindAll provides a mock function with given fields: user
 func (_m *UserRepositoryInterface) FindAll(user []*entities.User) ([]*entities.User, error) {
 	ret := _m.Called(user)

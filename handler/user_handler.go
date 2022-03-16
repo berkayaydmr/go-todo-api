@@ -59,15 +59,15 @@ func (handler *UserHandler) PatchUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-	user := entities.User{Id: id}
+	user := &entities.User{Id: id}
 
-	record, err := handler.UserRepository.FindByID(&user)
+	user, err = handler.UserRepository.FindByID(user)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
-	if record == nil {
+	if user == nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusNotFound, nil)
 		return
@@ -93,14 +93,14 @@ func (handler *UserHandler) PatchUser(c *gin.Context) {
 	hash := utils.HashPassword(requestUser.Password)
 	user.Password = hash
 
-	err = handler.UserRepository.Update(&user)
+	err = handler.UserRepository.Update(user)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.UserApiResponse(&user))
+	c.JSON(http.StatusOK, utils.UserApiResponse(user))
 }
 
 func (handler *UserHandler) DeleteUser(c *gin.Context) {
@@ -125,7 +125,7 @@ func (handler *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	user.Status = "PASSIVE"
-	
+
 	err = handler.UserRepository.Update(&user)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))

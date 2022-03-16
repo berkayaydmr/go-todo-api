@@ -66,11 +66,13 @@ func TestPostUser_FAIL(t *testing.T) {
 
 func TestPatchUser(t *testing.T) {
 	mockUserRepository := mocks.UserRepositoryInterface{}
-	userPatchRequest := &models.UserPatchRequest{Password: "1111", PasswordConfirm: "1111"}
+	userPatchRequest := &models.UserPatchRequest{Password: "1111", PasswordConfirm: "1111", OldPassword: "1010"}
 	userUpdate := &entities.User{Id: 0, Password: utils.HashPassword(userPatchRequest.Password)}
 	user := &entities.User{Id: 0}
+	currentPassword := utils.HashPassword("1010")
+	userFind := &entities.User{Id: 0, Password: currentPassword}
 
-	mockUserRepository.On("FindByID", user).Return(user, nil)
+	mockUserRepository.On("FindByID", user).Return(userFind, nil)
 	mockUserRepository.On("Update", userUpdate).Return(nil)
 
 	bin, _ := json.Marshal(userPatchRequest)
@@ -103,10 +105,11 @@ func TestPatchUser_Fail(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	mockUserRepository := mocks.UserRepositoryInterface{}
-	user := &entities.User{Id: 0, Status: "Passive"}
+	user := &entities.User{Id: 0}
+	userUpdated := &entities.User{Id: 0, Status: "PASSIVE"}
 
-	mockUserRepository.On("Update", user).Return(nil)
-	mockUserRepository.On("Delete", user).Return(nil)
+	mockUserRepository.On("FindByID", user).Return(user,nil)
+	mockUserRepository.On("Update", userUpdated).Return(nil)
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
@@ -119,10 +122,11 @@ func TestDeleteUser(t *testing.T) {
 
 func TestDeleteUser_Fail(t *testing.T) {
 	mockUserRepository := mocks.UserRepositoryInterface{}
-	user := &entities.User{Id: 0, Status: "Passive"}
+	user := &entities.User{Id: 0}
+	userUpdated := &entities.User{Id: 0, Status: "PASSIVE"}
 
-	mockUserRepository.On("Update", user).Return(nil)
-	mockUserRepository.On("Delete", user).Return(nil)
+	mockUserRepository.On("FindByID", user).Return(user,nil)
+	mockUserRepository.On("Update", userUpdated).Return(nil)
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
