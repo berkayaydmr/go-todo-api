@@ -7,17 +7,59 @@ import (
 	"go-todo-api/utils"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type UserHandler struct {
-	UserRepository repository.UserRepositoryInterface
+	UserRepository  repository.UserRepositoryInterface
+	RedisRepository repository.RedisClientInterface
 }
 
-func NewUserHandler(UserRepo repository.UserRepositoryInterface) *UserHandler {
-	return &UserHandler{UserRepository: UserRepo}
+func NewUserHandler(UserRepo repository.UserRepositoryInterface, redisRepository repository.RedisClientInterface) *UserHandler {
+	return &UserHandler{UserRepository: UserRepo, RedisRepository: redisRepository}
+}
+
+func (handler *UserHandler) LoginUser(c *gin.Context) {
+	var userRequest = &models.UserLoginRequest{}
+	if err := c.BindJSON(&userRequest); err != nil {
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	var user = entities.User{
+		Email: userRequest.Email,
+	}
+
+	_, err := handler.UserRepository.FindByEmail(&user)
+
+	if utils.HashPassword(userRequest.Password) != user.Password {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Wrong email or password",
+		})
+		return
+	}
+
+	token, err := utils.GenerateToken(user.Id)
+	if err != nil {
+		zap.S().Error("Error: ", err)
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	redisKey := strconv.FormatUint(user.Id, 10)
+	err = handler.RedisRepository.SetData(redisKey, token, time.Minute)
+	if err != nil {
+		zap.S().Error("Error: ", err)
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"accessToken": token,
+	})
 }
 
 func (handler *UserHandler) PostUser(c *gin.Context) {
@@ -110,7 +152,7 @@ func (handler *UserHandler) DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-	
+
 	user := entities.User{Id: userId}
 	record, err := handler.UserRepository.FindByID(&user)
 	if err != nil {

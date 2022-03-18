@@ -12,6 +12,7 @@ type UserRepositoryInterface interface {
 	Update(user *entities.User) error
 	FindAll(user []*entities.User) ([]*entities.User, error)
 	FindByID(user *entities.User) (*entities.User, error)
+	FindByEmail(user *entities.User) (*entities.User, error)
 }
 
 type UserRepository struct {
@@ -46,4 +47,9 @@ func (repository *UserRepository) FindByID(user *entities.User) (*entities.User,
 		return nil, err
 	}
 	return user, nil
+}
+
+func (repository *UserRepository) FindByEmail(user *entities.User) (*entities.User,error) {
+	err := repository.db.Not("status = ?", "PASSIVE").First(&user).Error
+	return user , err
 }

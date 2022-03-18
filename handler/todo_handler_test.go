@@ -11,13 +11,26 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alicebob/miniredis"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
+func ConnectMockRedis() *redis.Client {
+	miniRedis,err := miniredis.Run()
+	if err != nil {
+		return nil
+	}
 
+	client := redis.NewClient(&redis.Options{
+		Addr: miniRedis.Addr(),
+	})
+	return client
+}
 func TestPostToDo_OK(t *testing.T) {
 	mockToDoRepo := mocks.ToDoRepositoryInterface{}
+	mockRedis := ConnectMockRedis()
 
 	toDoResponse := mocks.ToDoResponse()
 	toDo := &entities.ToDo{Details: "testDetails", Status: "On Progress"}
@@ -30,8 +43,9 @@ func TestPostToDo_OK(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}}
+	c.Writer.Header().Set("Authorization", "")
 	c.Request = httptest.NewRequest("POST", "/users/:user_id/todos", bytes.NewBuffer(bin))
-	handler := NewToDoHandler(&mockToDoRepo)
+	handler := NewToDoHandler(&mockToDoRepo, mockRedis)
 	handler.PostToDo(c)
 	assert.Equal(t, http.StatusCreated, recorder.Result().StatusCode)
 

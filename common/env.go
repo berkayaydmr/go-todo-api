@@ -10,7 +10,9 @@ import (
 type Enviroment struct {
 	DatabaseUrl string
 	RouterUrl   string
-	Debug	bool
+	RedisUrl    string
+	Debug       bool
+	SecretKey   string
 }
 
 func GetEnviroment() *Enviroment {
@@ -24,7 +26,8 @@ func GetEnviroment() *Enviroment {
 	appHost := os.Getenv("APPLICATION_HOST")
 	appPort := os.Getenv("APPLICATION_PORT")
 	routerUrl := appHost + ":" + appPort
-	
+	redisUrl := appHost + ":" + "6379"
+	secretKet := os.Getenv("ACCESS_KEY")
 	var debug bool
 	if os.Getenv("DEBUG") == "true" {
 		debug = true
@@ -33,6 +36,8 @@ func GetEnviroment() *Enviroment {
 	return &Enviroment{
 		DatabaseUrl: databaseUrl,
 		RouterUrl:   routerUrl,
-		Debug: debug,
+		RedisUrl:    redisUrl,
+		Debug:       debug,
+		SecretKey:   secretKet,
 	}
 }
