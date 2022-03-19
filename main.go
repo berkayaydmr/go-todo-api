@@ -16,7 +16,7 @@ func main() {
 	logger.Info("logger initialized")
 
 	redisClient := redis.NewClient(&redis.Options{
-		Addr: env.RouterUrl,
+		Addr: env.RedisUrl,
 	})
 
 	db := common.ConnectDB(env.DatabaseUrl)

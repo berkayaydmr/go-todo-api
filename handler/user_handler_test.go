@@ -20,6 +20,8 @@ import (
 
 func TestPostUser(t *testing.T) {
 	mockUserRepository := mocks.UserRepositoryInterface{}
+	mockRedis := mocks.RedisClientInterface{}
+
 	user := mocks.User()
 	userRequest := &models.UserRequest{Email: "email", Password: "", PasswordConfirm: ""}
 	password := utils.HashPassword(user.Password)
@@ -33,7 +35,7 @@ func TestPostUser(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Request = httptest.NewRequest("POST", "/users", bytes.NewBuffer(bin))
-	NewUserHandler(&mockUserRepository).PostUser(c)
+	NewUserHandler(&mockUserRepository,&mockRedis).PostUser(c)
 
 	assert.Equal(t, http.StatusCreated, recorder.Result().StatusCode)
 

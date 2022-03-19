@@ -19,7 +19,6 @@ func NewRedisRepository(redisClient *redis.Client) RedisClientInterface {
 }
 
 func (redisClient *RedisClient) SetData(key string, value string, exp time.Duration) error {
-	//TODO implement me
 	err := redisClient.redis.Set(key, value, exp).Err()
 	return err
 }

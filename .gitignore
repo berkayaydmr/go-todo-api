@@ -19,3 +19,5 @@ venv.bak/
 
 # VsCode
 vscode/
+.idea/go-todo-api.iml
+/idea
