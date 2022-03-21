@@ -23,7 +23,7 @@ func NewUserHandler(UserRepo repository.UserRepositoryInterface, redisRepository
 }
 
 func (handler *UserHandler) LoginUser(c *gin.Context) {
-	var userRequest = &models.UserLoginRequest{}
+	var userRequest = &models.UserLogRequest{}
 	if err := c.BindJSON(&userRequest); err != nil {
 		c.JSON(http.StatusBadRequest, nil)
 		return
@@ -33,9 +33,9 @@ func (handler *UserHandler) LoginUser(c *gin.Context) {
 		Email: userRequest.Email,
 	}
 
-	_, err := handler.UserRepository.FindByEmail(&user)
+	userResponse, err := handler.UserRepository.FindByEmail(&user)
 
-	if utils.HashPassword(userRequest.Password) != user.Password {
+	if utils.HashPassword(userRequest.Password) != userResponse.Password {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Wrong email or password",
 		})
@@ -49,7 +49,7 @@ func (handler *UserHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	redisKey := strconv.FormatUint(user.Id, 10)
+	redisKey := strconv.FormatUint(userResponse.Id, 10)
 	err = handler.RedisRepository.SetData(redisKey, token, time.Minute)
 	if err != nil {
 		zap.S().Error("Error: ", err)
@@ -62,6 +62,33 @@ func (handler *UserHandler) LoginUser(c *gin.Context) {
 	})
 }
 
+func (handler UserHandler) LogOut(c *gin.Context) {
+	var userRequest = &models.UserLogRequest{}
+	if err := c.BindJSON(&userRequest); err != nil {
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	var user = entities.User{
+		Email: userRequest.Email,
+	}
+
+	_, err := handler.UserRepository.FindByEmail(&user)
+
+	userID := strconv.FormatUint(user.Id, 10)
+
+	err = handler.RedisRepository.DeleteData(userID)
+	if err != nil {
+		zap.S().Error("Something went wrong:", err)
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User successfully logged out",
+	})
+}
+
 func (handler *UserHandler) PostUser(c *gin.Context) {
 	var requestUser = &models.UserRequest{}
 
@@ -71,7 +98,7 @@ func (handler *UserHandler) PostUser(c *gin.Context) {
 		return
 	}
 	if !requestUser.Validate() {
-		zap.S().Error("Error: Paswords do not match")
+		zap.S().Error("Error: Passwords do not match")
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
@@ -116,13 +143,13 @@ func (handler *UserHandler) PatchUser(c *gin.Context) {
 	}
 
 	var requestUser = &models.UserPatchRequest{}
-	if err := c.BindJSON(&requestUser); err != nil {
+	if err := c.ShouldBindJSON(&requestUser); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 	if !requestUser.Validate() {
-		zap.S().Error("Error: Paswords do not match")
+		zap.S().Error("Error: Passwords do not match or Null variable sent")
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
@@ -187,13 +214,13 @@ func (handler *UserHandler) GetUser(c *gin.Context) {
 		return
 	}
 
-	record, err := handler.UserRepository.FindByID(&user)
+	userResponse, err := handler.UserRepository.FindByID(&user)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
-	if record == nil {
+	if userResponse == nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusNotFound, nil)
 		return

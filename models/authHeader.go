@@ -11,7 +11,7 @@ type AuthHeader struct {
 }
 
 func (auth *AuthHeader) Validate() bool {
-	envSecretKey := common.GetEnviroment().SecretKey
+	envSecretKey := common.GetEnvironment().SecretKey
 	err := jwt.SigningMethodHS256.Verify(auth.Token, envSecretKey, envSecretKey)
 	if err != nil {
 		return true

@@ -26,7 +26,7 @@ func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, nil)
+		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -40,7 +40,7 @@ func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 	}
 
 	var createToDo = &models.ToDoRequest{}
-	if err := c.BindJSON(&createToDo); err != nil {
+	if err := c.ShouldBindJSON(&createToDo); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
 		return
@@ -71,7 +71,7 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, nil)
+		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -136,7 +136,7 @@ func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, nil)
+		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -186,7 +186,7 @@ func (handler *ToDoHandler) GetToDos(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, nil)
+		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -210,7 +210,7 @@ func (handler *ToDoHandler) GetToDos(c *gin.Context) {
 		return
 	}
 
-	var toDosResponse = make([]models.ToDo, len(toDos))
+	toDosResponse := make([]models.ToDo, len(toDos))
 
 	for i := 0; i < len(toDos); i++ {
 		toDosResponse[i] = models.ToDo{
@@ -230,7 +230,7 @@ func (handler *ToDoHandler) GetToDo(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, nil)
+		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 

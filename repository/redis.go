@@ -8,6 +8,7 @@ import (
 type RedisClientInterface interface {
 	GetData(key string) string
 	SetData(key string, value string, exp time.Duration) error
+	DeleteData(key string) error
 }
 
 type RedisClient struct {
@@ -26,4 +27,9 @@ func (redisClient *RedisClient) SetData(key string, value string, exp time.Durat
 func (redisClient *RedisClient) GetData(key string) string {
 	data := redisClient.redis.Get(key)
 	return data.Val()
+}
+
+func (redisClient *RedisClient) DeleteData(key string) error {
+	err := redisClient.redis.Del(key).Err()
+	return err
 }

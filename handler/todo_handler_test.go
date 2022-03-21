@@ -21,11 +21,9 @@ func TestPostToDo_OK(t *testing.T) {
 	mockRedis := mocks.RedisClientInterface{}
 
 	toDoResponse := mocks.ToDoResponse()
-	toDo := &entities.ToDo{Details: "testDetails", Status: "On Progress"}
-	userID := "0"
-	token := ""
+	toDo := mocks.ToDo()
 
-	mockRedis.On("GetData", userID).Return(token)
+	mockRedis.On("GetData", "0").Return("")
 	mockToDoRepo.On("Insert", toDo).Return(nil)
 
 	toDoRequest := models.ToDoRequest{Details: "testDetails", Status: "On Progress"}
@@ -34,8 +32,9 @@ func TestPostToDo_OK(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}}
-	c.Writer.Header().Set("Authorization", "")
 	c.Request = httptest.NewRequest("POST", "/users/:user_id/todos", bytes.NewBuffer(bin))
+	c.Request.Header.Add("Authorization", "Bearer ")
+
 	handler := NewToDoHandler(&mockToDoRepo, &mockRedis)
 	handler.PostToDo(c)
 	assert.Equal(t, http.StatusCreated, recorder.Result().StatusCode)
@@ -50,16 +49,18 @@ func TestPostToDo_OK(t *testing.T) {
 
 func TestPostToDo_FAIL(t *testing.T) {
 	mockToDoRepo := mocks.ToDoRepositoryInterface{}
-	mockUserRepo := mocks.UserRepositoryInterface{}
 	mockRedis := mocks.RedisClientInterface{}
 
-	user := mocks.User()
 	toDo := mocks.ToDoResponse()
-	mockUserRepo.On("Insert", user).Return(nil)
-	mockToDoRepo.On("Insert", toDo).Return(toDo, nil)
+
+	mockToDoRepo.On("Insert", toDo).Return(nil)
+	mockRedis.On("GetData", "0").Return("")
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
+	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}}
+	c.Request = httptest.NewRequest("POST", "/users/:user_id/todos", nil)
+	c.Request.Header.Add("Authorization", "Bearer ")
 	handler := NewToDoHandler(&mockToDoRepo, &mockRedis)
 	handler.PostToDo(c)
 
@@ -76,6 +77,7 @@ func TestPatchToDo_OK(t *testing.T) {
 
 	mockToDoRepository.On("FindByID", toDoo).Return(toDo, nil)
 	mockToDoRepository.On("Update", toDo).Return(nil)
+	mockRedis.On("GetData", "0").Return("")
 
 	bin, _ := json.Marshal(toDoPatch)
 	handler := NewToDoHandler(&mockToDoRepository, &mockRedis)
@@ -83,6 +85,7 @@ func TestPatchToDo_OK(t *testing.T) {
 	c, _ := gin.CreateTestContext(recorder)
 	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}, gin.Param{Key: "todo_id", Value: "0"}}
 	c.Request = httptest.NewRequest("PUT", "/users/:user_id/todos/:todo_id", bytes.NewBuffer(bin))
+	c.Request.Header.Add("Authorization", "Bearer ")
 	handler.PatchToDo(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
 
@@ -106,6 +109,7 @@ func TestPatchToDo_Fail(t *testing.T) {
 	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindByID", toDoo).Return(toDo, nil)
 	mockToDoRepository.On("Update", toDo).Return(nil)
+	mockRedis.On("GetData", "0").Return(nil)
 
 	var details = "Updated Detail"
 	var status = "Done"
@@ -117,6 +121,7 @@ func TestPatchToDo_Fail(t *testing.T) {
 	c, _ := gin.CreateTestContext(recorder)
 	c.Params = gin.Params{gin.Param{Key: "id", Value: "s"}}
 	c.Request = httptest.NewRequest("PUT", "/user/todos/0", bytes.NewBuffer(bin))
+	c.Request.Header.Add("Authorization", "Bearer ")
 	handler.PatchToDo(c)
 	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
 }
@@ -132,11 +137,13 @@ func TestDeleteToDo_OK(t *testing.T) {
 	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
 	mockToDoRepository.On("Delete", toDoo).Return(nil)
+	mockRedis.On("GetData", "0").Return("")
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}, gin.Param{Key: "todo_id", Value: "0"}}
 	c.Request = httptest.NewRequest("DELETE", "/user/todos", nil)
+	c.Request.Header.Add("Authorization", "Bearer ")
 	handler := NewToDoHandler(&mockToDoRepository, &mockRedis)
 	handler.DeleteToDo(c)
 	assert.Equal(t, http.StatusNoContent, recorder.Result().StatusCode)
@@ -153,6 +160,7 @@ func TestDeleteToDo_Fail(t *testing.T) {
 	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindByID", toDoo).Return(toDoo, nil)
 	mockToDoRepository.On("Delete", toDoo).Return(nil)
+	mockRedis.On("GetData", "0").Return("")
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
@@ -172,16 +180,18 @@ func TestGetToDos_OK(t *testing.T) {
 	var toDo = &entities.ToDo{
 		UserId: user.Id,
 	}
-	var toDos []*entities.ToDo
+	var toDos = []*entities.ToDo{}
 	var toDosResponse = []models.ToDo{}
 
 	mockUserRepo.On("Insert", user).Return(user, nil)
 	mockToDoRepository.On("FindAll", toDo).Return(toDos, nil)
+	mockRedis.On("GetData", "0").Return("")
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}}
 	c.Request = httptest.NewRequest("GET", "/users/:user_id/todos", nil)
+	c.Request.Header.Add("Authorization", "Bearer ")
 	handler := NewToDoHandler(&mockToDoRepository, &mockRedis)
 	handler.GetToDos(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
@@ -200,10 +210,12 @@ func TestGetToDos_Fail(t *testing.T) {
 
 	var toDos []*entities.ToDo
 	mockToDoRepository.On("FindAll", toDos).Return(toDos, nil)
+	mockRedis.On("GetData", "0").Return("")
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Request = httptest.NewRequest("GET", "/users/:user_id/todos", nil)
+	c.Request.Header.Add("Authorization", "Bearer ")
 	handler := NewToDoHandler(&mockToDoRepository, &mockRedis)
 	handler.GetToDos(c)
 	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)
@@ -220,11 +232,13 @@ func TestGetToDo_OK(t *testing.T) {
 	}
 
 	mockToDoRepository.On("FindByID", toDo).Return(toDo, nil)
+	mockRedis.On("GetData", "0").Return("")
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Params = gin.Params{gin.Param{Key: "user_id", Value: "0"}, gin.Param{Key: "todo_id", Value: "0"}}
 	c.Request = httptest.NewRequest("GET", "/users/:user_id/todos/:todo_id", nil)
+	c.Request.Header.Set("Authorization", "Bearer ")
 	handler := NewToDoHandler(&mockToDoRepository, &mockRedis)
 	handler.GetToDo(c)
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
@@ -243,11 +257,13 @@ func TestGetToDo_Fail(t *testing.T) {
 
 	toDo := &entities.ToDo{}
 	mockToDoRepository.On("FindByID", toDo).Return(toDo, nil)
+	mockRedis.On("GetData", "0").Return("")
 
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Params = gin.Params{gin.Param{Key: "id", Value: "a"}}
 	c.Request = httptest.NewRequest("GET", "/user/todos/0", nil)
+	c.Request.Header.Add("Authorization", "Bearer ")
 	handler := NewToDoHandler(&mockToDoRepository, &mockRedis)
 	handler.GetToDo(c)
 	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode)

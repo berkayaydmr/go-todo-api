@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	env := common.GetEnviroment()
+	env := common.GetEnvironment()
 
 	logger := common.NewLogger(env.Debug)
 	logger.Info("logger initialized")
@@ -31,6 +31,7 @@ func main() {
 	router.Use(gin.Recovery())
 
 	router.POST("users/login", UserHandler.LoginUser)
+	router.POST("users/logout", UserHandler.LogOut)
 	router.GET("users", UserHandler.GetUsers)
 	router.GET("users/:user_id", UserHandler.GetUser)
 	router.POST("users", UserHandler.PostUser)
