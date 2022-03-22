@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/go-redis/redis"
 	"go-todo-api/common"
 	"go-todo-api/handler"
 	"go-todo-api/repository"
@@ -9,20 +10,28 @@ import (
 )
 
 func main() {
-	env := common.GetEnviroment()
+	env := common.GetEnvironment()
 
 	logger := common.NewLogger(env.Debug)
-	logger.Info("logger initilazed")
+	logger.Info("logger initialized")
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: env.RedisUrl,
+	})
 
 	db := common.ConnectDB(env.DatabaseUrl)
+
 	ToDoRepository := repository.NewToDoRepository(db)
 	UserRepository := repository.NewUserRepository(db)
-	ToDoHandler := handler.NewToDoHandler(ToDoRepository)
-	UserHandler := handler.NewUserHandler(UserRepository)
+	RedisRepository := repository.NewRedisRepository(redisClient)
+	ToDoHandler := handler.NewToDoHandler(ToDoRepository, RedisRepository)
+	UserHandler := handler.NewUserHandler(UserRepository, RedisRepository)
 
 	router := gin.Default()
 	router.Use(gin.Recovery())
 
+	router.POST("users/login", UserHandler.LoginUser)
+	router.POST("users/logout", UserHandler.LogOut)
 	router.GET("users", UserHandler.GetUsers)
 	router.GET("users/:user_id", UserHandler.GetUser)
 	router.POST("users", UserHandler.PostUser)

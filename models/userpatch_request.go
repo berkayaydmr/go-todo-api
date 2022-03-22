@@ -7,10 +7,12 @@ type UserPatchRequest struct {
 }
 
 func (model *UserPatchRequest) Validate() bool {
-	var isPasswordConfirmed bool = false
+	var isValidationConfirmed bool = false
 	if model.Password == model.PasswordConfirm {
-		isPasswordConfirmed = true
-		return isPasswordConfirmed
+		if model.OldPassword != "" || model.Password != "" || model.PasswordConfirm != "" {
+			isValidationConfirmed = true
+			return isValidationConfirmed
+		}
 	}
-	return isPasswordConfirmed
+	return isValidationConfirmed
 }

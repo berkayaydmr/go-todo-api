@@ -12,10 +12,10 @@ func User() *entities.User {
 	Password := ""
 	Status := "Pending"
 	return &entities.User{
-		Id:        Id,
-		Email:     Email,
-		Password:  Password,
-		Status:    Status,
+		Id:       Id,
+		Email:    Email,
+		Password: Password,
+		Status:   Status,
 	}
 }
 
@@ -34,14 +34,18 @@ func UserModelResponse() *models.UserResponse {
 	}
 }
 
-func UserRequestModel() models.UserRequest {
-	Email := "email"
-	Password := "password"
-	PasswordConfirm := "password"
-	return models.UserRequest{
-		Email:           Email,
-		Password:        Password,
-		PasswordConfirm: PasswordConfirm,
+func ToDo() *entities.ToDo {
+	id := uint64(0)
+	details := "testDetails"
+	status := "On Progress"
+	return &entities.ToDo{
+		Id:        id,
+		UserId:    uint64(0),
+		User:      entities.User{Id: 0, Email: "", Status: "", Password: ""},
+		Details:   details,
+		Status:    status,
+		CreatedAt: time.Time{},
+		UpdatedAt: time.Time{},
 	}
 }
 
@@ -58,10 +62,6 @@ func ToDoResponse() *models.ToDo {
 		CreatedAt: CreatedAt.String(),
 		UpdatedAt: UpdatedAt.String(),
 	}
-}
-
-func ToDosResponse() []*entities.ToDo {
-	return []*entities.ToDo{}
 }
 
 func ToDoPatchResponse() *models.ToDo {

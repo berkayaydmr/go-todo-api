@@ -36,6 +36,29 @@ func (_m *UserRepositoryInterface) FindAll(user []*entities.User) ([]*entities.U
 	return r0, r1
 }
 
+// FindByEmail provides a mock function with given fields: user
+func (_m *UserRepositoryInterface) FindByEmail(user *entities.User) (*entities.User, error) {
+	ret := _m.Called(user)
+
+	var r0 *entities.User
+	if rf, ok := ret.Get(0).(func(*entities.User) *entities.User); ok {
+		r0 = rf(user)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entities.User)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*entities.User) error); ok {
+		r1 = rf(user)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByID provides a mock function with given fields: user
 func (_m *UserRepositoryInterface) FindByID(user *entities.User) (*entities.User, error) {
 	ret := _m.Called(user)

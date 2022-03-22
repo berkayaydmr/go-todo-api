@@ -12,6 +12,7 @@ type UserRepositoryInterface interface {
 	Update(user *entities.User) error
 	FindAll(user []*entities.User) ([]*entities.User, error)
 	FindByID(user *entities.User) (*entities.User, error)
+	FindByEmail(user *entities.User) (*entities.User, error)
 }
 
 type UserRepository struct {
@@ -38,7 +39,7 @@ func (repository *UserRepository) FindAll(user []*entities.User) ([]*entities.Us
 }
 
 func (repository *UserRepository) FindByID(user *entities.User) (*entities.User, error) {
-	err := repository.db.Not("status = ?", "PASSIVE").First(&user).Error
+	err := repository.db.Not("status = ?", "PASSIVE").Find(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -46,4 +47,9 @@ func (repository *UserRepository) FindByID(user *entities.User) (*entities.User,
 		return nil, err
 	}
 	return user, nil
+}
+
+func (repository *UserRepository) FindByEmail(user *entities.User) (*entities.User, error) {
+	err := repository.db.Not("status = ?", "PASSIVE").Where("email = ?", user.Email).Find(&user).Error
+	return user, err
 }

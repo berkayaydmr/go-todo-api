@@ -7,23 +7,40 @@ import (
 	"go-todo-api/utils"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type ToDoHandler struct {
-	ToDoRepository repository.ToDoRepositoryInterface
+	ToDoRepository  repository.ToDoRepositoryInterface
+	RedisRepository repository.RedisClientInterface
 }
 
-func NewToDoHandler(ToDoRepo repository.ToDoRepositoryInterface) *ToDoHandler {
-	return &ToDoHandler{ToDoRepository: ToDoRepo}
+func NewToDoHandler(ToDoRepo repository.ToDoRepositoryInterface, redisRepository repository.RedisClientInterface) *ToDoHandler {
+	return &ToDoHandler{ToDoRepository: ToDoRepo, RedisRepository: redisRepository}
 }
 
 func (handler *ToDoHandler) PostToDo(c *gin.Context) {
-	var createToDo = &models.ToDoRequest{}
+	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
+	if err != nil {
+		zap.S().Error("Error: ", zap.Error(err))
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
 
-	if err := c.BindJSON(&createToDo); err != nil {
+	redisToken := handler.RedisRepository.GetData(c.Param("user_id"))
+	splitToken := strings.Split(c.GetHeader("Authorization"), "Bearer ")
+	if redisToken != splitToken[1] {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Tokens not match or expired Token",
+		})
+		return
+	}
+
+	var createToDo = &models.ToDoRequest{}
+	if err := c.ShouldBindJSON(&createToDo); err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
 		return
@@ -34,12 +51,6 @@ func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 		return
 	}
 
-	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
-	if err != nil {
-		zap.S().Error("Error: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
 	var newToDo = &entities.ToDo{
 		Details: createToDo.Details,
 		Status:  createToDo.Status,
@@ -57,10 +68,19 @@ func (handler *ToDoHandler) PostToDo(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
-	userId, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
+	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
-		zap.S().Error("Error: On User id convert", zap.Error(err))
+		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	redisToken := handler.RedisRepository.GetData(c.Param("user_id"))
+	splitToken := strings.Split(c.GetHeader("Authorization"), "Bearer ")
+	if redisToken != splitToken[1] {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Tokens not match or expired Token",
+		})
 		return
 	}
 
@@ -73,7 +93,7 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 
 	var result = &entities.ToDo{
 		Id:     todoId,
-		UserId: userId,
+		UserId: userID,
 	}
 
 	todo, err := handler.ToDoRepository.FindByID(result)
@@ -113,10 +133,19 @@ func (handler *ToDoHandler) PatchToDo(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
-	userId, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
+	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	redisToken := handler.RedisRepository.GetData(c.Param("user_id"))
+	splitToken := strings.Split(c.GetHeader("Authorization"), "Bearer ")
+	if redisToken != splitToken[1] {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Tokens not match or expired Token",
+		})
 		return
 	}
 
@@ -129,7 +158,7 @@ func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
 
 	var result = &entities.ToDo{
 		Id:     todoId,
-		UserId: userId,
+		UserId: userID,
 	}
 
 	todo, err := handler.ToDoRepository.FindByID(result)
@@ -154,25 +183,34 @@ func (handler *ToDoHandler) DeleteToDo(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) GetToDos(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
+	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	var userID = &entities.ToDo{
-		UserId: id,
+	redisToken := handler.RedisRepository.GetData(c.Param("user_id"))
+	splitToken := strings.Split(c.GetHeader("Authorization"), "Bearer ")
+	if redisToken != splitToken[1] {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Tokens not match or expired Token",
+		})
+		return
 	}
 
-	toDos, err := handler.ToDoRepository.FindAll(userID)
+	var user = &entities.ToDo{
+		UserId: userID,
+	}
+
+	toDos, err := handler.ToDoRepository.FindAll(user)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 
-	var toDosResponse = make([]models.ToDo, len(toDos))
+	toDosResponse := make([]models.ToDo, len(toDos))
 
 	for i := 0; i < len(toDos); i++ {
 		toDosResponse[i] = models.ToDo{
@@ -189,10 +227,19 @@ func (handler *ToDoHandler) GetToDos(c *gin.Context) {
 }
 
 func (handler *ToDoHandler) GetToDo(c *gin.Context) {
-	userId, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
+	userID, err := strconv.ParseUint(c.Param("user_id"), 10, 64)
 	if err != nil {
 		zap.S().Error("Error: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	redisToken := handler.RedisRepository.GetData(c.Param("user_id"))
+	splitToken := strings.Split(c.GetHeader("Authorization"), "Bearer ")
+	if redisToken != splitToken[1] {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Tokens not match or expired Token",
+		})
 		return
 	}
 
@@ -205,7 +252,7 @@ func (handler *ToDoHandler) GetToDo(c *gin.Context) {
 
 	var result = &entities.ToDo{
 		Id:     toDoId,
-		UserId: userId,
+		UserId: userID,
 	}
 
 	toDo, err := handler.ToDoRepository.FindByID(result)
