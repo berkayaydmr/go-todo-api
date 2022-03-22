@@ -6,7 +6,7 @@ import (
 )
 
 func ConnectDB(DatabaseUrl string) *gorm.DB {
-	db, err := gorm.Open(postgres.Open(DatabaseUrl), &gorm.Config{})	
+	db, err := gorm.Open(postgres.Open(DatabaseUrl), &gorm.Config{})
 
 	if err != nil {
 		return nil

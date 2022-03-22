@@ -27,13 +27,13 @@ func (_m *ToDoRepositoryInterface) Delete(i *entities.ToDo) error {
 	return r0
 }
 
-// FindAll provides a mock function with given fields: result
-func (_m *ToDoRepositoryInterface) FindAll(result []*entities.ToDo) ([]*entities.ToDo, error) {
-	ret := _m.Called(result)
+// FindAll provides a mock function with given fields: user
+func (_m *ToDoRepositoryInterface) FindAll(user *entities.ToDo) ([]*entities.ToDo, error) {
+	ret := _m.Called(user)
 
 	var r0 []*entities.ToDo
-	if rf, ok := ret.Get(0).(func([]*entities.ToDo) []*entities.ToDo); ok {
-		r0 = rf(result)
+	if rf, ok := ret.Get(0).(func(*entities.ToDo) []*entities.ToDo); ok {
+		r0 = rf(user)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*entities.ToDo)
@@ -41,8 +41,8 @@ func (_m *ToDoRepositoryInterface) FindAll(result []*entities.ToDo) ([]*entities
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]*entities.ToDo) error); ok {
-		r1 = rf(result)
+	if rf, ok := ret.Get(1).(func(*entities.ToDo) error); ok {
+		r1 = rf(user)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -88,24 +88,15 @@ func (_m *ToDoRepositoryInterface) Insert(i *entities.ToDo) error {
 }
 
 // Update provides a mock function with given fields: i
-func (_m *ToDoRepositoryInterface) Update(i *entities.ToDo) (*entities.ToDo, error) {
+func (_m *ToDoRepositoryInterface) Update(i *entities.ToDo) error {
 	ret := _m.Called(i)
 
-	var r0 *entities.ToDo
-	if rf, ok := ret.Get(0).(func(*entities.ToDo) *entities.ToDo); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*entities.ToDo) error); ok {
 		r0 = rf(i)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entities.ToDo)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*entities.ToDo) error); ok {
-		r1 = rf(i)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
